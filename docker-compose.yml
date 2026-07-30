@@ -1,0 +1,189 @@
+# ===========================================
+# Portafolio de Clientes - Docker Compose
+# ===========================================
+# Stack: Next.js + Laravel + PostgreSQL + Redis + MinIO
+#
+# Uso:
+#   docker compose up -d          # Levantar todo
+#   docker compose logs -f        # Ver logs
+#   docker compose down -v        # Borrar todo (incluye volúmenes)
+#   docker compose ps             # Estado de servicios
+# ===========================================
+
+services:
+
+  # ─────────────────────────────────────────
+  # Frontend: Next.js 15 (App Router + PWA)
+  # ─────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    container_name: portafolio-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://backend:8000}
+      - NODE_ENV=production
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - portafolio-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ─────────────────────────────────────────
+  # Backend: Laravel 13 (API REST)
+  # ─────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: portafolio-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    environment:
+      # Laravel
+      APP_NAME: ${APP_NAME:-PortafolioClientes}
+      APP_ENV: ${APP_ENV:-local}
+      APP_KEY: ${APP_KEY}
+      APP_DEBUG: ${APP_DEBUG:-true}
+      APP_URL: ${APP_URL:-http://localhost:8000}
+
+      # PostgreSQL
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB:-portafolio}
+      DB_USERNAME: ${POSTGRES_USER:-portafolio}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+      SESSION_DRIVER: redis
+
+      # MinIO (S3-compatible)
+      FILESYSTEM_DISK: s3
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_BUCKET: ${MINIO_BUCKET:-portafolio}
+      AWS_ENDPOINT: http://minio:9000
+      AWS_USE_PATH_STYLE_ENDPOINT: true
+    volumes:
+      - backend-storage:/var/www/storage/app
+      - backend-logs:/var/www/storage/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - portafolio-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ─────────────────────────────────────────
+  # PostgreSQL 16 (Base de datos principal)
+  # ─────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: portafolio-postgres
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-portafolio}
+      POSTGRES_USER: ${POSTGRES_USER:-portafolio}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - portafolio-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-portafolio} -d ${POSTGRES_DB:-portafolio}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ─────────────────────────────────────────
+  # Redis 7 (Cache, Queue, Sessions)
+  # ─────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: portafolio-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - portafolio-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────────
+  # MinIO (S3-compatible Object Storage)
+  # ─────────────────────────────────────────
+  minio:
+    image: minio/minio:latest
+    container_name: portafolio-minio
+    restart: unless-stopped
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio-data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - portafolio-network
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+# ─────────────────────────────────────────
+# Volúmenes persistentes
+# ─────────────────────────────────────────
+volumes:
+  postgres-data:
+  redis-data:
+  minio-data:
+  backend-storage:
+  backend-logs:
+
+# ─────────────────────────────────────────
+# Red compartida
+# ─────────────────────────────────────────
+networks:
+  portafolio-network:
+    driver: bridge
