@@ -13,18 +13,18 @@
 services:
 
   # ─────────────────────────────────────────
-  # Frontend: Next.js 15 (App Router + PWA)
+  # Frontend: Next.js 16 (App Router)
   # ─────────────────────────────────────────
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8010}
     container_name: portafolio-frontend
     restart: unless-stopped
     ports:
-      - "${FRONTEND_PORT:-3000}:3000"
+      - "${FRONTEND_PORT:-3010}:3000"
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://backend:8000}
       - NODE_ENV=production
@@ -50,14 +50,14 @@ services:
     container_name: portafolio-backend
     restart: unless-stopped
     ports:
-      - "${BACKEND_PORT:-8000}:8000"
+      - "${BACKEND_PORT:-8010}:8000"
     environment:
       # Laravel
       APP_NAME: ${APP_NAME:-PortafolioClientes}
       APP_ENV: ${APP_ENV:-local}
       APP_KEY: ${APP_KEY}
       APP_DEBUG: ${APP_DEBUG:-true}
-      APP_URL: ${APP_URL:-http://localhost:8000}
+      APP_URL: ${APP_URL:-http://localhost:8010}
 
       # PostgreSQL
       DB_CONNECTION: pgsql
@@ -82,6 +82,10 @@ services:
       AWS_BUCKET: ${MINIO_BUCKET:-portafolio}
       AWS_ENDPOINT: http://minio:9000
       AWS_USE_PATH_STYLE_ENDPOINT: true
+
+      # Sanctum (SPA Auth)
+      SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS:-localhost:3010,localhost:8010}
+      SESSION_DOMAIN: ${SESSION_DOMAIN:-.localhost}
     volumes:
       - backend-storage:/var/www/storage/app
       - backend-logs:/var/www/storage/logs
@@ -109,7 +113,7 @@ services:
     container_name: portafolio-postgres
     restart: unless-stopped
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${POSTGRES_PORT:-5433}:5432"
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-portafolio}
       POSTGRES_USER: ${POSTGRES_USER:-portafolio}
@@ -133,7 +137,7 @@ services:
     container_name: portafolio-redis
     restart: unless-stopped
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "${REDIS_PORT:-6380}:6379"
     volumes:
       - redis-data:/data
     command: redis-server --appendonly yes
@@ -153,8 +157,8 @@ services:
     container_name: portafolio-minio
     restart: unless-stopped
     ports:
-      - "${MINIO_API_PORT:-9000}:9000"
-      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+      - "${MINIO_API_PORT:-9010}:9000"
+      - "${MINIO_CONSOLE_PORT:-9011}:9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
