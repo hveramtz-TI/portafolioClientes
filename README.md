@@ -13,13 +13,13 @@ docker compose up -d
 
 | Servicio | URL | Puerto |
 |----------|-----|--------|
-| Frontend | http://localhost:3000 | 3000 |
-| Backend API | http://localhost:8000/api | 8000 |
-| Health Check | http://localhost:8000/api/health | 8000 |
-| PostgreSQL | localhost | 5432 |
-| Redis | localhost | 6379 |
-| MinIO API | http://localhost:9000 | 9000 |
-| MinIO Console | http://localhost:9001 | 9001 |
+| Frontend | http://localhost:3010 | 3010 |
+| Backend API | http://localhost:8010/api | 8010 |
+| Health Check | http://localhost:8010/api/health | 8010 |
+| PostgreSQL | localhost | 5433 |
+| Redis | localhost | 6380 |
+| MinIO API | http://localhost:9010 | 9010 |
+| MinIO Console | http://localhost:9011 | 9011 |
 
 ## Documentación
 
