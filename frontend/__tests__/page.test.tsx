@@ -1,29 +1,45 @@
 import { render, screen } from '@testing-library/react'
 import Page from '../src/app/page'
 
+// Mock de useAuth
+jest.mock('../src/hooks/useAuth', () => ({
+  useAuth: jest.fn(() => ({
+    user: null,
+    loading: false,
+  })),
+}))
+
+// Mock de useRouter
+const mockReplace = jest.fn()
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    replace: mockReplace,
+  }),
+}))
+
 describe('Page', () => {
-  it('renders a heading', () => {
-    render(<Page />)
-
-    const heading = screen.getByRole('heading', { level: 1 })
-
-    expect(heading).toBeInTheDocument()
+  beforeEach(() => {
+    jest.clearAllMocks()
   })
 
-  it('renders the Next.js logo', () => {
+  it('renders loading state initially', () => {
     render(<Page />)
-
-    const logo = screen.getByAltText('Next.js logo')
-
-    expect(logo).toBeInTheDocument()
+    expect(screen.getByText('Cargando...')).toBeInTheDocument()
   })
 
-  it('renders documentation link', () => {
+  it('redirects to /login when not authenticated', () => {
     render(<Page />)
+    expect(mockReplace).toHaveBeenCalledWith('/login')
+  })
 
-    const docLink = screen.getByText('Documentation')
+  it('redirects to /dashboard when authenticated', () => {
+    const { useAuth } = require('../src/hooks/useAuth')
+    useAuth.mockReturnValue({
+      user: { id: '1', name: 'Test', email: 'test@example.com', role: 'user' },
+      loading: false,
+    })
 
-    expect(docLink).toBeInTheDocument()
-    expect(docLink).toHaveAttribute('href', expect.stringContaining('nextjs.org/docs'))
+    render(<Page />)
+    expect(mockReplace).toHaveBeenCalledWith('/dashboard')
   })
 })
