@@ -12,9 +12,15 @@
 
 Siempre empezar cada nueva feature en **Planning mode**.
 
+**Convención de archivos:**
+- Los planning van en `docs/planning/` (centralizado).
+- Nomenclatura: `planning1.md`, `planning2.md`, `planning3.md`, etc. (numeración secuencial).
+- Cada planning es una fase/sprint separado.
+- El planning actual es `docs/planning/planning1.md` (Auth + Roles).
+
 Antes de ejecutar cualquier workflow de SDD:
 
-1. Crear un `planning.md`.
+1. Crear un `planning{N}.md` en `docs/planning/`.
 2. Validar el planning con el usuario.
 3. **No generar código durante la fase de planning.**
 4. El documento de planning se convierte en la fuente de verdad para SDD.
