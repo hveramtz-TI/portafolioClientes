@@ -16,7 +16,8 @@ Siempre empezar cada nueva feature en **Planning mode**.
 - Los planning van en `docs/planning/` (centralizado).
 - Nomenclatura: `planning1.md`, `planning2.md`, `planning3.md`, etc. (numeración secuencial).
 - Cada planning es una fase/sprint separado.
-- El planning actual es `docs/planning/planning1.md` (Auth + Roles).
+- Planning actuales: `planning1.md` (Auth + Roles) y `planning2.md` (Toma de Requisitos / HUs).
+- Las HUs viven en `docs/historias/` (una HU por archivo) y los flujos UX/UI en `docs/flujos/` (diagramas Mermaid).
 
 Antes de ejecutar cualquier workflow de SDD:
 
@@ -36,6 +37,21 @@ planning.md ↓ sdd-spec ↓ sdd-design ↓ sdd-tasks ↓ sdd-apply ↓ sdd-veri
 - Usar siempre el documento de planning como contexto primario.
 - **Nunca inventar requisitos que no estén en el planning** salvo que se solicite explícitamente.
 - Si falta información, **preguntar antes de continuar**.
+
+### Notion Backup (MANDATORY)
+
+El repo Git es la **fuente de verdad**. Notion es el **espejo de backup** del estado de la documentación (planning, HUs, sprints, flujos UX/UI).
+
+**Regla:** toda documentación aprobada o actualizada en `docs/` (planning, HUs, sprints, flujos, decisiones) debe quedar reflejada en Notion como respaldo.
+
+**Cómo:**
+
+1. Después de crear o actualizar un documento en `docs/`, reflejarlo en Notion vía MCP (`notion_search` / `notion_fetch` para ubicar, `notion_create_pages` / `notion_update_page` para escribir).
+2. Estructura de backup en Notion: página principal "Portafolio de Clientes" con subpáginas por tipo (Planning, Historias, Flujos) y, cuando haya HUs, una base de datos de Historias de Usuario con las mismas propiedades que el template de `docs/historias/README.md`.
+3. No inventar contenido en Notion: Notion refleja **exactamente** lo que está en `docs/`. Git manda, Notion sigue.
+4. Los diagramas Mermaid no se renderizan en Notion: representar flujos en Notion como lista de pasos / tablas, dejando el diagrama en el repo (link al archivo si hace falta).
+5. Al cambiar el estado de una HU/sprint (Pendiente → En Revisión → Aprobada → Implementada), actualizar tanto el `.md` como su espejo en Notion.
+6. Si un documento se elimina del repo, eliminar también su espejo en Notion (no dejar huérfanos).
 
 ## Coding
 
