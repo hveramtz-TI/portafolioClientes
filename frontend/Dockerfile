@@ -20,6 +20,19 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
 RUN npm run build
 
+# ============ Test ============
+# Etapa auxiliar para correr Jest en Docker (target: test).
+FROM node:20-alpine AS test
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+COPY . .
+
+CMD ["npm", "test"]
+
 # ============ Runner ============
 FROM node:20-alpine AS runner
 WORKDIR /app

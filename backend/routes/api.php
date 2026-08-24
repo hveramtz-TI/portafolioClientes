@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\ClientController;
+use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
@@ -62,6 +64,13 @@ Route::middleware([
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [LoginController::class, 'logout']);
         Route::get('/user', [UserController::class, 'me']);
+
+        // Clients
+        Route::patch('clients/{client}/status', [ClientController::class, 'updateStatus']);
+        Route::apiResource('clients', ClientController::class)->only(['index', 'store', 'update', 'destroy']);
+
+        // Companies
+        Route::apiResource('companies', CompanyController::class)->only(['index', 'store', 'update', 'show', 'destroy']);
         
         // Admin only routes
         Route::middleware('role:admin')->group(function () {

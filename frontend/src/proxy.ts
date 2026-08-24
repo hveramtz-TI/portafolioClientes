@@ -4,30 +4,17 @@ import type { NextRequest } from 'next/server';
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Rutas protegidas
-  const protectedRoutes = ['/dashboard'];
-  const isProtectedRoute = protectedRoutes.some(route => 
-    pathname === route || pathname.startsWith(`${route}/`)
-  );
-
-  if (isProtectedRoute) {
-    // Verificar si hay cookie de sesión
-    const sessionCookie = request.cookies.get('portafolioclientes-session');
-    
-    if (!sessionCookie) {
-      // Redirigir a login
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('redirect', pathname);
-      return NextResponse.redirect(loginUrl);
-    }
+  // La única ruta pública es /login. Todo lo demás requiere sesión.
+  if (pathname === '/login' || pathname.startsWith('/login/')) {
+    return NextResponse.next();
   }
 
-  // Si está en /login y ya tiene sesión, redirigir a dashboard
-  if (pathname === '/login') {
-    const sessionCookie = request.cookies.get('portafolioclientes-session');
-    if (sessionCookie) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
+  // Protección por defecto: sin cookie de sesión, a login.
+  const sessionCookie = request.cookies.get('portafolioclientes-session');
+  if (!sessionCookie) {
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();

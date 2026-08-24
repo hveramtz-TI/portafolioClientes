@@ -61,18 +61,17 @@ describe('proxy', () => {
   });
 
   describe('página de login', () => {
-    it('debe redirigir a /dashboard si ya hay sesión en /login', () => {
+    it('debe permitir acceso a /login incluso si ya hay sesión', () => {
+      // El redirect a /dashboard cuando ya hay sesión se maneja en el cliente
+      // (login page via useAuth), no en el proxy.
       const request = createMockRequest('/login', {
         'portafolioclientes-session': 'session-token',
       });
 
       proxy(request);
 
-      expect(NextResponse.redirect).toHaveBeenCalledWith(
-        expect.objectContaining({
-          pathname: '/dashboard',
-        })
-      );
+      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.redirect).not.toHaveBeenCalled();
     });
 
     it('debe permitir acceso a /login si no hay sesión', () => {
@@ -84,13 +83,13 @@ describe('proxy', () => {
     });
   });
 
-  describe('rutas públicas', () => {
-    it('debe permitir acceso a rutas públicas sin sesión', () => {
+  describe('rutas protegidas por defecto', () => {
+    it('debe redirigir a /login en la raíz (/) sin sesión', () => {
       const request = createMockRequest('/', {});
 
       proxy(request);
 
-      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.redirect).toHaveBeenCalled();
     });
   });
 });

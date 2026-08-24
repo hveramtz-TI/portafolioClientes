@@ -21,11 +21,17 @@ WORKDIR /var/www
 COPY composer.json composer.lock artisan ./
 COPY bootstrap bootstrap
 
-# Instalar dependencias sin scripts (el .env no está disponible en build).
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+# Instalar dependencias (incluye require-dev para PHPUnit/tests) sin scripts
+# (el .env no está disponible en build).
+RUN composer install --optimize-autoloader --no-interaction --no-scripts
 
 # Copiar resto del código
 COPY . .
+
+# Crear un .env vacío: la configuración viene de las variables de entorno de
+# docker-compose, pero dotenv emite un warning si el archivo no existe (y
+# PHPUnit lo marca como "risky" en los tests).
+RUN touch /var/www/.env
 
 # Regenerar autoloader y ejecutar hooks de Composer con todo el código presente.
 RUN composer dump-autoload --optimize
@@ -36,9 +42,10 @@ FROM php:8.3-fpm-alpine
 RUN apk add --no-cache \
     postgresql-dev \
     libzip-dev \
+    sqlite-dev \
     nginx \
     supervisor \
-    && docker-php-ext-install pdo_pgsql zip bcmath \
+    && docker-php-ext-install pdo_pgsql zip bcmath pdo_sqlite \
     && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
     && pecl install redis \
     && docker-php-ext-enable redis \
