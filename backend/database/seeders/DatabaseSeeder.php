@@ -34,5 +34,11 @@ class DatabaseSeeder extends Seeder
                 'role' => 'user',
             ]
         );
+
+        // Clientes de ejemplo
+        $this->call(ClientSeeder::class);
+
+        // Empresas de ejemplo
+        $this->call(CompanySeeder::class);
     }
 }
