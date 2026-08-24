@@ -6,18 +6,18 @@ Directorio central de las Historias de Usuario del proyecto **Portafolio de Clie
 
 | Código | Título | Épica | Prioridad | Estado |
 |--------|--------|-------|-----------|--------|
-| HU-001 | PWA responsive base (instalable, escritorio + mobile) | Plataforma | Baja | Pendiente |
-| HU-002 | Crear cliente | Clientes y empresas | Alta | Pendiente |
-| HU-003 | Validar duplicado RUT + empresa con alerta | Clientes y empresas | Alta | Pendiente |
-| HU-004 | Editar cliente | Clientes y empresas | Alta | Pendiente |
-| HU-005 | Desactivar cliente (conserva datos) | Clientes y empresas | Alta | Pendiente |
-| HU-006 | Eliminar definitivamente cliente con registros relacionados | Clientes y empresas | Alta | Pendiente |
-| HU-007 | Reactivar cliente | Clientes y empresas | Media | Pendiente |
-| HU-008 | Listado de clientes con filtro activos/desactivados | Clientes y empresas | Alta | Pendiente |
-| HU-009 | Crear empresa | Clientes y empresas | Alta | Pendiente |
-| HU-010 | Editar empresa | Clientes y empresas | Media | Pendiente |
-| HU-011 | Eliminar empresa (bloqueo si tiene clientes asociados) | Clientes y empresas | Media | Pendiente |
-| HU-012 | Asociar/desasociar cliente a empresa | Clientes y empresas | Alta | Pendiente |
+| HU-001 | PWA responsive base (instalable, escritorio + mobile) | Plataforma | Baja | Aprobada |
+| HU-002 | Crear cliente | Clientes y empresas | Alta | Aprobada |
+| HU-003 | Validar duplicado RUT + empresa con alerta | Clientes y empresas | Alta | Aprobada |
+| HU-004 | Editar cliente | Clientes y empresas | Alta | Aprobada |
+| HU-005 | Desactivar cliente (conserva datos) | Clientes y empresas | Alta | Aprobada |
+| HU-006 | Eliminar definitivamente cliente con registros relacionados | Clientes y empresas | Alta | Aprobada |
+| HU-007 | Reactivar cliente | Clientes y empresas | Media | Aprobada |
+| HU-008 | Listado de clientes con filtro activos/desactivados | Clientes y empresas | Alta | Aprobada |
+| HU-009 | Crear empresa | Clientes y empresas | Alta | Aprobada |
+| HU-010 | Editar empresa | Clientes y empresas | Media | Aprobada |
+| HU-011 | Eliminar empresa (bloqueo si tiene clientes asociados) | Clientes y empresas | Media | Aprobada |
+| HU-012 | Asociar/desasociar cliente a empresa | Clientes y empresas | Alta | Aprobada |
 | HU-013 | Crear rubro | Rubros, categorías y servicios | Alta | Pendiente |
 | HU-014 | Editar rubro | Rubros, categorías y servicios | Media | Pendiente |
 | HU-015 | Desactivar rubro (oculta servicios, conserva historial) | Rubros, categorías y servicios | Media | Pendiente |
