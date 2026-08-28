@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -15,17 +16,19 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('surname')->nullable();
-            $table->string('rut')->unique();
+            $table->string('rut');
             $table->string('email');
             $table->string('phone');
             $table->string('address')->nullable();
-            // Sin foreign key: la relación con companies se agrega en Fase 2.
-            $table->uuid('company_id')->nullable();
+            $table->foreignUuid('company_id')->nullable()->constrained('companies')->restrictOnDelete();
             $table->text('notes')->nullable();
             $table->string('website')->nullable();
             $table->string('status')->default('activo'); // 'activo' | 'desactivado'
             $table->timestamps();
+            $table->unique(['rut', 'company_id'], 'clients_rut_company_id_unique');
         });
+
+        DB::statement('CREATE UNIQUE INDEX clients_rut_without_company_unique ON clients (rut) WHERE company_id IS NULL');
     }
 
     /**
