@@ -2,8 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\Rut;
-use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Unique;
 
 class UpdateClientRequest extends StoreClientRequest
 {
@@ -15,7 +14,13 @@ class UpdateClientRequest extends StoreClientRequest
     public function rules(): array
     {
         $rules = parent::rules();
-        $rules['rut'] = ['required', 'string', 'max:20', new Rut(), Rule::unique('clients', 'rut')->ignore($this->route('client'))];
+        $rules['rut'] = [
+            'required',
+            'string',
+            'max:20',
+            new \App\Rules\Rut(),
+            $this->rutUniquenessRule()->ignore($this->route('client')),
+        ];
 
         return $rules;
     }

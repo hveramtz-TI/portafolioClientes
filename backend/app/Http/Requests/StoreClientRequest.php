@@ -42,10 +42,21 @@ class StoreClientRequest extends FormRequest
             'email' => ['required', 'email', 'max:255'],
             'phone' => ['required', 'string', 'max:50'],
             'address' => ['nullable', 'string', 'max:255'],
-            'company_id' => ['nullable', 'uuid'],
+            'company_id' => ['nullable', 'uuid', Rule::exists('companies', 'id')],
             'notes' => ['nullable', 'string'],
             'website' => ['nullable', 'url', 'max:255'],
         ];
+    }
+
+    protected function rutUniquenessRule(): \Illuminate\Validation\Rules\Unique
+    {
+        return Rule::unique('clients', 'rut')->where(function ($query): void {
+            if ($this->input('company_id') === null) {
+                $query->whereNull('company_id');
+            } else {
+                $query->where('company_id', $this->input('company_id'));
+            }
+        });
     }
 
     /**
