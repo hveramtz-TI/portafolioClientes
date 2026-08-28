@@ -35,10 +35,10 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Clientes de ejemplo
-        $this->call(ClientSeeder::class);
-
         // Empresas de ejemplo
         $this->call(CompanySeeder::class);
+
+        // Clientes de ejemplo
+        $this->call(ClientSeeder::class);
     }
 }

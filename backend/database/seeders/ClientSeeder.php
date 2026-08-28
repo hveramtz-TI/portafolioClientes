@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Client;
+use App\Models\Company;
 use Illuminate\Database\Seeder;
 
 class ClientSeeder extends Seeder
@@ -12,12 +13,13 @@ class ClientSeeder extends Seeder
      */
     public function run(): void
     {
+        $companies = Company::query()->pluck('id', 'name');
         $clients = [
-            ['name' => 'María', 'surname' => 'González', 'rut' => '11111111-1', 'email' => 'maria.gonzalez@example.com', 'phone' => '+56 9 1234 5678', 'status' => 'activo'],
-            ['name' => 'Juan', 'surname' => 'Pérez', 'rut' => '22222222-2', 'email' => 'juan.perez@example.com', 'phone' => '+56 9 2345 6789', 'status' => 'activo'],
-            ['name' => 'Ana', 'surname' => 'Rodríguez', 'rut' => '33333333-3', 'email' => 'ana.rodriguez@example.com', 'phone' => '+56 9 3456 7890', 'status' => 'activo'],
-            ['name' => 'Pedro', 'surname' => 'Soto', 'rut' => '44444444-4', 'email' => 'pedro.soto@example.com', 'phone' => '+56 9 4567 8901', 'status' => 'activo'],
-            ['name' => 'Carolina', 'surname' => 'Muñoz', 'rut' => '55555555-5', 'email' => 'carolina.munoz@example.com', 'phone' => '+56 9 5678 9012', 'status' => 'desactivado'],
+            ['name' => 'María', 'surname' => 'González', 'rut' => '11111111-1', 'email' => 'maria.gonzalez@example.com', 'phone' => '+56 9 1234 5678', 'status' => 'activo', 'company_id' => $companies['Empresa Alpha SPA'] ?? null],
+            ['name' => 'Juan', 'surname' => 'Pérez', 'rut' => '22222222-2', 'email' => 'juan.perez@example.com', 'phone' => '+56 9 2345 6789', 'status' => 'activo', 'company_id' => $companies['Beta Tecnología LTDA'] ?? null],
+            ['name' => 'Ana', 'surname' => 'Rodríguez', 'rut' => '33333333-3', 'email' => 'ana.rodriguez@example.com', 'phone' => '+56 9 3456 7890', 'status' => 'activo', 'company_id' => $companies['Gamma Consultores'] ?? null],
+            ['name' => 'Pedro', 'surname' => 'Soto', 'rut' => '44444444-4', 'email' => 'pedro.soto@example.com', 'phone' => '+56 9 4567 8901', 'status' => 'activo', 'company_id' => $companies['Empresa Alpha SPA'] ?? null],
+            ['name' => 'Carolina', 'surname' => 'Muñoz', 'rut' => '55555555-5', 'email' => 'carolina.munoz@example.com', 'phone' => '+56 9 5678 9012', 'status' => 'desactivado', 'company_id' => $companies['Delta Ingeniería SpA'] ?? null],
             ['name' => 'José', 'surname' => 'Contreras', 'rut' => '66666666-6', 'email' => 'jose.contreras@example.com', 'phone' => '+56 9 6789 0123', 'status' => 'activo'],
             ['name' => 'Valentina', 'surname' => 'Rojas', 'rut' => '77777777-7', 'email' => 'valentina.rojas@example.com', 'phone' => '+56 9 7890 1234', 'status' => 'desactivado'],
             ['name' => 'Camila', 'surname' => 'Flores', 'rut' => '88888888-8', 'email' => 'camila.flores@example.com', 'phone' => '+56 9 8901 2345', 'status' => 'activo'],
