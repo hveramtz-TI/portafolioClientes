@@ -33,7 +33,7 @@ sequenceDiagram
     
     par CATEGORÍAS BASE (7)
         CatSeeder->>DB: INSERT INTO categorias (id, rubro_id, name, status, created_at)
-        Note right of DB: Informática (rubro_id=1):<br/>  - Sitios web y presencia digital<br/>  - Aplicaciones a medida<br/>  - Mantenimiento y soporte<br/>Diseño (rubro_id=2):<br/>  - Identidad visual<br/>  - UX/UI<br/>Consultoría (rubro_id=3):<br/>  - Arquitectura y estrategia
+        Note right of DB: Informática (rubro_id=1):<br/>  - Sitios web y presencia digital<br/>  - Aplicaciones a medida<br/>  - Mantenimiento y soporte<br/>Diseño (rubro_id=2):<br/>  - Identidad visual<br/>  - UX/UI<br/>Consultoría (rubro_id=3):<br/>  - Arquitectura y estrategia<br/>  - X (placeholder MVP, sin servicios)
         DB-->>CatSeeder: 7 rows inserted
     end
     
@@ -123,6 +123,7 @@ flowchart TD
 | Diseño | Identidad visual | 1 | Logo, brand guide, rebranding |
 | Diseño | UX/UI | 2 | Auditoría, prototipos, investigación |
 | Consultoría | Arquitectura y estrategia | 1 | Arquitectura técnica, revisiones código |
+| Consultoría | X (placeholder MVP) | 2 | Placeholder sin servicios, solo para completar el set base del MVP |
 
 ### **Servicios (12)**
 
@@ -196,6 +197,7 @@ class CategoriaSeeder extends Seeder
             ['rubro_id' => $diseno->id, 'name' => 'Identidad visual', 'order' => 1],
             ['rubro_id' => $diseno->id, 'name' => 'UX/UI', 'order' => 2],
             ['rubro_id' => $consultoria->id, 'name' => 'Arquitectura y estrategia', 'order' => 1],
+            ['rubro_id' => $consultoria->id, 'name' => 'X', 'order' => 2],
         ];
 
         foreach ($categorias as $cat) {
