@@ -18,19 +18,19 @@ Directorio central de las Historias de Usuario del proyecto **Portafolio de Clie
 | HU-010 | Editar empresa | Clientes y empresas | Media | Aprobada |
 | HU-011 | Eliminar empresa (bloqueo si tiene clientes asociados) | Clientes y empresas | Media | Aprobada |
 | HU-012 | Asociar/desasociar cliente a empresa | Clientes y empresas | Alta | Aprobada |
-| HU-013 | Crear rubro | Rubros, categorías y servicios | Alta | Pendiente |
-| HU-014 | Editar rubro | Rubros, categorías y servicios | Media | Pendiente |
-| HU-015 | Desactivar rubro (oculta servicios, conserva historial) | Rubros, categorías y servicios | Media | Pendiente |
-| HU-016 | Eliminar definitivamente rubro sin relaciones | Rubros, categorías y servicios | Media | Pendiente |
-| HU-017 | Crear categoría | Rubros, categorías y servicios | Alta | Pendiente |
-| HU-018 | Editar categoría | Rubros, categorías y servicios | Media | Pendiente |
-| HU-019 | Desactivar categoría (oculta servicios, conserva historial) | Rubros, categorías y servicios | Media | Pendiente |
-| HU-020 | Eliminar definitivamente categoría sin relaciones | Rubros, categorías y servicios | Media | Pendiente |
-| HU-021 | Crear servicio | Rubros, categorías y servicios | Alta | Pendiente |
-| HU-022 | Editar servicio (título, descripción, valor) | Rubros, categorías y servicios | Alta | Pendiente |
-| HU-023 | Eliminar o desactivar servicio (según historial de uso) | Rubros, categorías y servicios | Media | Pendiente |
-| HU-024 | Seeders de rubros, categorías y servicios con valores ficticios | Rubros, categorías y servicios | Alta | Pendiente |
-| HU-025 | Copia personalizable del catálogo por usuario | Rubros, categorías y servicios | Alta | Pendiente |
+| HU-013 | Crear rubro | Rubros, categorías y servicios | Alta | Aprobada |
+| HU-014 | Editar rubro | Rubros, categorías y servicios | Media | Aprobada |
+| HU-015 | Desactivar rubro (oculta servicios, conserva historial) | Rubros, categorías y servicios | Media | Aprobada |
+| HU-016 | Eliminar definitivamente rubro sin relaciones | Rubros, categorías y servicios | Media | Aprobada |
+| HU-017 | Crear categoría | Rubros, categorías y servicios | Alta | Aprobada |
+| HU-018 | Editar categoría | Rubros, categorías y servicios | Media | Aprobada |
+| HU-019 | Desactivar categoría (oculta servicios, conserva historial) | Rubros, categorías y servicios | Media | Aprobada |
+| HU-020 | Eliminar definitivamente categoría sin relaciones | Rubros, categorías y servicios | Media | Aprobada |
+| HU-021 | Crear servicio | Rubros, categorías y servicios | Alta | Aprobada |
+| HU-022 | Editar servicio (título, descripción, valor) | Rubros, categorías y servicios | Alta | Aprobada |
+| HU-023 | Eliminar o desactivar servicio (según historial de uso) | Rubros, categorías y servicios | Media | Aprobada |
+| HU-024 | Seeders de rubros, categorías y servicios con valores ficticios | Rubros, categorías y servicios | Alta | Aprobada |
+| HU-025 | Copia personalizable del catálogo por usuario | Rubros, categorías y servicios | Alta | Aprobada |
 | HU-026 | Configurar contacto público explícito | Perfil público | Media | Pendiente |
 | HU-027 | Activar/desactivar perfil con confirmación | Perfil público | Media | Pendiente |
 | HU-028 | URL pública UUID inmutable + "Perfil temporalmente no disponible" | Perfil público | Media | Pendiente |

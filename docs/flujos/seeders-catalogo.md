@@ -17,9 +17,8 @@ sequenceDiagram
     participant CatSeeder as CategoriaSeeder
     participant SvcSeeder as ServiceSeeder
     participant DB as PostgreSQL
-    participant Cache as Redis (opcional)
 
-    Note over Dev, Cache: EJECUCIÓN SEEDERS CATÁLOGO BASE
+    Note over Dev, DB: EJECUCIÓN SEEDERS CATÁLOGO BASE
     
     Dev->>Artisan: php artisan db:seed --class=DatabaseSeeder
     Artisan->>RubroSeeder: run()
@@ -57,12 +56,6 @@ sequenceDiagram
     Dev->>DB: SELECT COUNT(*) FROM services WHERE status='activo'
     DB-->>Dev: 12
     
-    opt CACHE WARMUP (opcional)
-        Dev->>Cache: SET catalog:version {hash} EX 86400
-        Dev->>Cache: SET catalog:rubros {json} EX 86400
-        Dev->>Cache: SET catalog:categorias {json} EX 86400
-        Dev->>Cache: SET catalog:services {json} EX 86400
-    end
 ```
 
 ---
@@ -81,31 +74,31 @@ flowchart TD
     Start([Inicio: php artisan db:seed]):::start
     
     %% DATABASE SEEDER ORQUESTADOR
-    DatabaseSeeder[DatabaseSeeder::run()\n→ Orden: Rubro → Categoria → Service\n→ Transacción por seeder]:::process
+    DatabaseSeeder[DatabaseSeeder::run()<br/>→ Orden: Rubro → Categoria → Service<br/>→ Transacción por seeder]:::process
     Start --> DatabaseSeeder
     
     %% RUBRO SEEDER
-    DatabaseSeeder --> RubroSeeder[RubroSeeder::run()\n→ 3 rubros fijos\n→ UUIDv7 + status=activo\n→ name unique global]:::process
-    RubroSeeder --> RubroData[(rubros table\n3 rows)]:::data
+    DatabaseSeeder --> RubroSeeder[RubroSeeder::run()<br/>→ 3 rubros fijos<br/>→ UUIDv7 + status=activo<br/>→ name unique global]:::process
+    RubroSeeder --> RubroData[(rubros table<br/>3 rows)]:::data
     
     %% CATEGORIA SEEDER (depende de rubros)
-    DatabaseSeeder --> CatSeeder[CategoriaSeeder::run()\n→ Lee rubros creados\n→ 7 categorías fijas\n→ rubro_id FK válido\n→ name unique por rubro_id]:::process
-    CatSeeder --> CatData[(categorias table\n7 rows)]:::data
+    DatabaseSeeder --> CatSeeder[CategoriaSeeder::run()<br/>→ Lee rubros creados<br/>→ 7 categorías fijas<br/>→ rubro_id FK válido<br/>→ name unique por rubro_id]:::process
+    CatSeeder --> CatData[(categorias table<br/>7 rows)]:::data
     RubroData -.->|FK reference| CatSeeder
     
     %% SERVICE SEEDER (depende de categorias)
-    DatabaseSeeder --> SvcSeeder[ServiceSeeder::run()\n→ Lee categorías creadas\n→ 11 servicios fijos\n→ categoria_id FK válido\n→ title unique por categoria_id\n→ value CLP entero ≥0\n→ tags JSON array válido]:::process
-    SvcSeeder --> SvcData[(services table\n11 rows)]:::data
+    DatabaseSeeder --> SvcSeeder[ServiceSeeder::run()<br/>→ Lee categorías creadas<br/>→ 12 servicios fijos<br/>→ categoria_id FK válido<br/>→ title unique por categoria_id<br/>→ value CLP entero ≥0<br/>→ tags JSON array válido]:::process
+    SvcSeeder --> SvcData[(services table<br/>12 rows)]:::data
     CatData -.->|FK reference| SvcSeeder
     
     %% VERIFICACIÓN
-    SvcData --> Verify{¿Verificación\nOK?}:::decision
-    Verify -->|Sí| VerifyOK[✅ 3 rubros + 7 cat + 11 svc\n→ Todos status=activo\n→ FKs íntegros\n→ Unicidad respetada]:::end
-    Verify -->|No| VerifyFail[❌ Rollback / Error\n→ Revisar seeds / FKs]:::end
+    SvcData --> Verify{¿Verificación<br/>OK?}:::decision
+    Verify -->|Sí| VerifyOK[✅ 3 rubros + 7 cat + 12 svc<br/>→ 22 registros totales<br/>→ Todos status=activo<br/>→ FKs íntegros<br/>→ Unicidad respetada]:::end
+    Verify -->|No| VerifyFail[❌ Rollback / Error<br/>→ Revisar seeds / FKs]:::end
     
     %% OPCIONAL: CACHE
-    VerifyOK --> CacheWarm[Opcional: Cache Warmup\nRedis: catalog:rubros, :categorias, :services\nTTL 24h]:::process
-    CacheWarm --> End([Fin: Catálogo base listo\npara forks usuarios]):::end
+    VerifyOK --> CacheWarm[Opcional: Cache Warmup<br/>Redis: catalog:rubros, :categorias, :services<br/>TTL 24h]:::process
+    CacheWarm --> End([Fin: Catálogo base listo<br/>para forks usuarios]):::end
 ```
 
 ---
@@ -324,4 +317,4 @@ docker compose exec backend php artisan tinker --execute="
 | **SoftDeletes** | No aplica en seeders (status=activo, deleted_at=null) |
 | **Testing** | Feature test: `assertDatabaseCount('rubros', 3)` etc. |
 
-> **Nota:** Transacciones, cache warmup, restricciones de producción y auditoría son propuestas pendientes de aprobación en SDD-design.
+> **Nota:** Los detalles de implementación no definidos aquí quedan TBD para SDD.

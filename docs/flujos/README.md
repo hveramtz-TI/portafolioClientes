@@ -25,7 +25,7 @@ Los flujos se documentan con **diagramas Mermaid** (flowchart o sequence) en mar
 
 ## Template de flujo
 
-```markdown
+````markdown
 # Nombre del flujo
 
 **HUs relacionadas:** HU-XXX, HU-YYY
@@ -38,7 +38,7 @@ flowchart TD
     A[Inicio] --> B{Paso decisión}
     B -->|Sí| C[Acción]
     B -->|No| D[Alternativa]
-```
+    ```
 
 ## Pasos
 
@@ -53,4 +53,4 @@ flowchart TD
 
 - Sin datos: ...
 - Error de red: ...
-```
+````
