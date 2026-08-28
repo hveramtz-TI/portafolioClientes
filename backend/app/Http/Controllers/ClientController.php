@@ -22,7 +22,7 @@ class ClientController extends Controller
         $status = $request->query('status', 'activo');
         $search = $request->query('search');
 
-        $query = Client::query();
+        $query = Client::query()->with('company:id,name');
 
         if ($status !== 'all') {
             $query->where('status', $status);
@@ -61,6 +61,7 @@ class ClientController extends Controller
     public function update(UpdateClientRequest $request, Client $client)
     {
         $client->update($request->validated());
+        $client->load('company:id,name');
 
         return response()->json($client);
     }
