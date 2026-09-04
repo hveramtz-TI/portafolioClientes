@@ -4,13 +4,23 @@ import type { NextRequest } from 'next/server';
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // La única ruta pública es /login. Todo lo demás requiere sesión.
+  // La única ruta pública es /login. Todo lo demás requiere sesión,
+  // excepto la landing del producto en /, que es pública solo sin sesión.
   if (pathname === '/login' || pathname.startsWith('/login/')) {
     return NextResponse.next();
   }
 
-  // Protección por defecto: sin cookie de sesión, a login.
   const sessionCookie = request.cookies.get('portafolioclientes-session');
+
+  // Raíz: sin sesión → landing pública; con sesión → dashboard.
+  if (pathname === '/') {
+    if (sessionCookie) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+    return NextResponse.next();
+  }
+
+  // Protección por defecto: sin cookie de sesión, a login.
   if (!sessionCookie) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);

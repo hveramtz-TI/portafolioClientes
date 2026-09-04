@@ -26,10 +26,36 @@ describe('proxy', () => {
     } as unknown as NextRequest;
   };
 
+  describe('ruta pública raíz (/)', () => {
+    it('debe permitir acceso anónimo a / (pasa a la landing)', () => {
+      const request = createMockRequest('/', {});
+
+      proxy(request);
+
+      expect(NextResponse.next).toHaveBeenCalled();
+      expect(NextResponse.redirect).not.toHaveBeenCalled();
+    });
+
+    it('debe redirigir a /dashboard si hay sesión en /', () => {
+      const request = createMockRequest('/', {
+        'portafolioclientes-session': 'session-token',
+      });
+
+      proxy(request);
+
+      expect(NextResponse.redirect).toHaveBeenCalledWith(
+        expect.objectContaining({
+          pathname: '/dashboard',
+        })
+      );
+      expect(NextResponse.next).not.toHaveBeenCalled();
+    });
+  });
+
   describe('rutas protegidas', () => {
     it('debe redirigir a /login si no hay sesión en /dashboard', () => {
       const request = createMockRequest('/dashboard', {});
-      
+
       proxy(request);
 
       expect(NextResponse.redirect).toHaveBeenCalledWith(
@@ -80,16 +106,6 @@ describe('proxy', () => {
       proxy(request);
 
       expect(NextResponse.next).toHaveBeenCalled();
-    });
-  });
-
-  describe('rutas protegidas por defecto', () => {
-    it('debe redirigir a /login en la raíz (/) sin sesión', () => {
-      const request = createMockRequest('/', {});
-
-      proxy(request);
-
-      expect(NextResponse.redirect).toHaveBeenCalled();
     });
   });
 });
