@@ -32,7 +32,7 @@ export function LandingValueProps() {
         {valueProps.map((prop) => (
           <article
             key={prop.title}
-            className="rounded-[var(--radius-tmc-pill)] bg-tmc-surface p-6"
+            className="rounded-[var(--radius-tmc-pill)] bg-tmc-surface p-8 sm:p-12"
           >
             <h3 className="mb-2 text-tmc-card font-medium text-tmc-ink">
               {prop.title}
