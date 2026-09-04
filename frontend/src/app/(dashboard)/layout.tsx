@@ -1,3 +1,4 @@
+import { AuthProvider } from '@/context/AuthContext';
 import { AppShell } from '@/components/shared/app-shell';
 
 export default function DashboardLayout({
@@ -5,5 +6,9 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <AppShell>{children}</AppShell>;
+  return (
+    <AuthProvider>
+      <AppShell>{children}</AppShell>
+    </AuthProvider>
+  );
 }
