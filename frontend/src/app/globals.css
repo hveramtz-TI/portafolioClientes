@@ -45,6 +45,39 @@
   --radius-4xl: calc(var(--radius) * 2.6);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* TMC landing tokens (light-only, curated per planning4 D3/D4/D7) */
+  --color-tmc-canvas: #F3F0EE;
+  --color-tmc-surface: #FCFBFA;
+  --color-tmc-ink: #141413;
+  --color-tmc-accent: #CF4500;
+  --color-tmc-accent-light: #F37338;
+  --color-tmc-accent-mid: #9A3A0A;
+  --color-tmc-link: #3860BE;
+  --color-tmc-neutral-1: #F4F4F4;
+  --color-tmc-neutral-2: #E8E2DA;
+  --color-tmc-neutral-3: #D1CDC7;
+  --color-tmc-neutral-4: #696969;
+  --color-tmc-neutral-5: #555555;
+  --color-tmc-neutral-6: #262627;
+  --radius-tmc-cta: 20px;
+  --radius-tmc-frame: 40px;
+  --radius-tmc-pill: 9999px;
+  --spacing-tmc-1: 4px;
+  --spacing-tmc-2: 8px;
+  --spacing-tmc-4: 16px;
+  --spacing-tmc-6: 24px;
+  --spacing-tmc-8: 32px;
+  --spacing-tmc-12: 48px;
+  --spacing-tmc-16: 64px;
+  --spacing-tmc-24: 96px;
+  --spacing-tmc-32: 128px;
+  --text-tmc-hero: 64px;
+  --text-tmc-hero--line-height: 64px;
+  --text-tmc-section: 36px;
+  --text-tmc-section--line-height: 44px;
+  --text-tmc-card: 24px;
+  --text-tmc-card--line-height: 36px;
 }
 
 :root {

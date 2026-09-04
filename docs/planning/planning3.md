@@ -1,6 +1,7 @@
 # Planning — Rubros, Categorías y Servicios
 
 **Fecha:** 2026-08-28
+**Estado:** ⏸️ **Pospuesto (2026-09-04)** — SDD pausada tras Slice 1/7 (PR #6 open hacia el tracker `feat/catalog-rubros-categorias-servicios`). Se retoma en un sprint posterior; el sprint actual es `planning4.md` (Landing Page del Producto).
 **Objetivo:** Implementar el catálogo personalizable de rubros, categorías y servicios sobre el modelo híbrido (catálogo base global + fork personal por usuario), incluyendo CRUD, lifecycle (desactivar/eliminar/reactivar), seeders del catálogo base y personalización sin alterar la base ni afectar a otros usuarios.
 
 ## Contexto
