@@ -1,22 +1,26 @@
 import { render } from '@testing-library/react'
-import Page from '../src/app/page'
+import LandingPage from '../src/app/(public)/page'
 
-// Mock de useAuth
-jest.mock('../src/hooks/useAuth', () => ({
-  useAuth: jest.fn(() => ({
-    user: null,
-    loading: false,
-  })),
-}))
+// Mock next/link so the RSC landing renders as plain anchors in jsdom.
+jest.mock('next/link', () => {
+  const MockLink = ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode
+    href: string
+    [key: string]: unknown
+  }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  )
+  MockLink.displayName = 'MockLink'
+  return MockLink
+})
 
-// Mock de useRouter
-jest.mock('next/navigation', () => ({
-  useRouter: () => ({
-    replace: jest.fn(),
-  }),
-}))
-
-it('renders homepage unchanged', () => {
-  const { container } = render(<Page />)
+it('renders the public landing page unchanged', async () => {
+  const { container } = render(<LandingPage />)
   expect(container).toMatchSnapshot()
 })

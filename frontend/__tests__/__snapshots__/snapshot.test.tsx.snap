@@ -1,15 +1,441 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
-exports[`renders homepage unchanged 1`] = `
+exports[`renders the public landing page unchanged 1`] = `
 <div>
-  <div
-    class="min-h-screen flex items-center justify-center"
+  <main
+    class="bg-tmc-canvas text-tmc-ink"
   >
-    <div
-      class="text-gray-500"
+    <header
+      class="sticky top-4 z-50 px-4"
     >
-      Cargando...
-    </div>
-  </div>
+      <nav
+        aria-label="Navegación principal"
+        class="mx-auto flex max-w-[1200px] items-center justify-between rounded-full bg-tmc-ink px-6 py-3 text-tmc-canvas"
+      >
+        <a
+          class="flex items-center gap-2"
+          href="/"
+        >
+          <span
+            class="text-base font-medium"
+            style="font-weight: 500;"
+          >
+            TMC
+          </span>
+          <span
+            class="sr-only"
+          >
+            That's My Client
+          </span>
+        </a>
+        <div
+          class="hidden items-center gap-6 md:flex"
+        >
+          <a
+            class="text-sm font-medium text-tmc-canvas/80 transition-colors hover:text-tmc-canvas"
+            href="#que-hace"
+          >
+            Qué hace
+          </a>
+          <a
+            class="text-sm font-medium text-tmc-canvas/80 transition-colors hover:text-tmc-canvas"
+            href="#editorial"
+          >
+            Por qué TMC
+          </a>
+          <a
+            class="text-sm font-medium text-tmc-canvas/80 transition-colors hover:text-tmc-canvas"
+            href="#comenzar"
+          >
+            Comenzar
+          </a>
+        </div>
+        <a
+          class="rounded-full bg-tmc-canvas px-4 py-2 text-sm font-medium text-tmc-ink transition-colors hover:bg-tmc-neutral-2"
+          href="/login"
+        >
+          Ingresar
+        </a>
+      </nav>
+    </header>
+    <section
+      class="mx-auto max-w-[1200px] px-4 pt-16 md:pt-24"
+    >
+      <div
+        class="max-w-2xl"
+      >
+        <p
+          class="mb-6 text-sm font-bold uppercase tracking-normal text-tmc-accent"
+        >
+          <span
+            aria-hidden="true"
+            class="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-tmc-accent"
+          />
+          Plataforma de gestión
+        </p>
+        <h1
+          class="mb-6 text-tmc-hero font-medium leading-[64px] text-tmc-ink"
+          style="font-size: var(--text-tmc-hero); line-height: var(--text-tmc-hero--line-height); font-weight: 500;"
+        >
+          Tu portafolio de clientes, en un solo lugar.
+        </h1>
+        <p
+          class="mb-8 text-lg leading-relaxed text-tmc-neutral-5"
+          style="font-weight: 450;"
+        >
+          TMC (That's My Client) organiza tu relación con cada cliente y empresa, su catálogo y sus solicitudes, para que tengas todo claro antes de tu próxima reunión.
+        </p>
+        <a
+          class="inline-flex items-center justify-center rounded-[var(--radius-tmc-cta)] bg-tmc-ink px-8 py-4 text-xl font-normal text-tmc-canvas transition-colors hover:bg-tmc-neutral-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent"
+          href="/login"
+        >
+          Ingresar
+        </a>
+      </div>
+      <div
+        class="mt-12"
+      >
+        <div
+          aria-label="Imagen pendiente: hero-media"
+          class="bg-tmc-neutral-2 flex items-center justify-center overflow-hidden rounded-[var(--radius-tmc-frame)]"
+          data-slot="hero-media"
+          role="img"
+          style="aspect-ratio: 16 / 9;"
+        >
+          <span
+            class="sr-only"
+          >
+            Espacio reservado para imagen (
+            hero-media
+            )
+          </span>
+        </div>
+      </div>
+    </section>
+    <section
+      class="mx-auto max-w-[1200px] px-4 py-16"
+      id="que-hace"
+    >
+      <h2
+        class="mb-12 text-tmc-section font-medium text-tmc-ink"
+      >
+        Qué hace la plataforma
+      </h2>
+      <div
+        class="grid gap-4 sm:grid-cols-2"
+      >
+        <article
+          class="rounded-[var(--radius-tmc-pill)] bg-tmc-surface p-6"
+        >
+          <h3
+            class="mb-2 text-tmc-card font-medium text-tmc-ink"
+          >
+            Clientes y empresas
+          </h3>
+          <p
+            class="text-base leading-relaxed text-tmc-neutral-5"
+          >
+            Una vista clara de cada cliente y su empresa, con su historial siempre a mano.
+          </p>
+        </article>
+        <article
+          class="rounded-[var(--radius-tmc-pill)] bg-tmc-surface p-6"
+        >
+          <h3
+            class="mb-2 text-tmc-card font-medium text-tmc-ink"
+          >
+            Catálogo personalizable
+          </h3>
+          <p
+            class="text-base leading-relaxed text-tmc-neutral-5"
+          >
+            Organiza rubros, categorías y servicios para reflejar tu propia oferta.
+          </p>
+        </article>
+        <article
+          class="rounded-[var(--radius-tmc-pill)] bg-tmc-surface p-6"
+        >
+          <h3
+            class="mb-2 text-tmc-card font-medium text-tmc-ink"
+          >
+            Solicitudes y órdenes
+          </h3>
+          <p
+            class="text-base leading-relaxed text-tmc-neutral-5"
+          >
+            Seguí cada pedido desde que llega hasta que se concreta, sin perder el hilo.
+          </p>
+        </article>
+        <article
+          class="rounded-[var(--radius-tmc-pill)] bg-tmc-surface p-6"
+        >
+          <h3
+            class="mb-2 text-tmc-card font-medium text-tmc-ink"
+          >
+            Panel general
+          </h3>
+          <p
+            class="text-base leading-relaxed text-tmc-neutral-5"
+          >
+            Un lugar central para entender el estado de tu cartera de un vistazo.
+          </p>
+        </article>
+      </div>
+    </section>
+    <section
+      class="relative mx-auto max-w-[1200px] overflow-hidden px-4 py-16"
+      id="editorial"
+    >
+      <p
+        aria-hidden="true"
+        class="pointer-events-none absolute left-4 top-8 text-[96px] font-bold leading-none tracking-tight text-tmc-surface select-none"
+      >
+        TMC
+      </p>
+      <div
+        class="relative grid items-center gap-12 md:grid-cols-2"
+      >
+        <div
+          class="relative flex justify-center"
+        >
+          <svg
+            aria-hidden="true"
+            class="absolute inset-0 -z-10 h-full w-full text-tmc-accent/40"
+            fill="none"
+            viewBox="0 0 200 200"
+          >
+            <circle
+              cx="100"
+              cy="100"
+              r="80"
+              stroke="currentColor"
+              stroke-width="1.5"
+            />
+            <circle
+              cx="100"
+              cy="100"
+              r="55"
+              stroke="currentColor"
+              stroke-width="1"
+            />
+          </svg>
+          <div
+            aria-label="Imagen pendiente: portrait-1"
+            class="bg-tmc-neutral-2 flex items-center justify-center overflow-hidden w-56 rounded-full md:w-64"
+            data-slot="portrait-1"
+            role="img"
+            style="aspect-ratio: 1 / 1;"
+          >
+            <span
+              class="sr-only"
+            >
+              Espacio reservado para imagen (
+              portrait-1
+              )
+            </span>
+          </div>
+          <a
+            class="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-tmc-canvas px-5 py-2 text-sm font-medium text-tmc-ink shadow-sm transition-colors hover:bg-tmc-neutral-2"
+            href="/login"
+          >
+            Conocé TMC
+          </a>
+        </div>
+        <div>
+          <p
+            class="mb-6 text-sm font-bold uppercase tracking-normal text-tmc-accent"
+          >
+            <span
+              aria-hidden="true"
+              class="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-tmc-accent"
+            />
+            Por qué TMC
+          </p>
+          <h2
+            class="mb-6 text-tmc-section font-medium leading-[44px] text-tmc-ink"
+          >
+            Hecho para quienes llevan adelante cada relación.
+          </h2>
+          <p
+            class="text-base leading-relaxed text-tmc-neutral-5"
+          >
+            TMC nace de una idea simple: que la información de tus clientes deje de estar dispersa y viva donde la necesitás, organizada y lista para usar.
+          </p>
+        </div>
+      </div>
+    </section>
+    <section
+      class="mx-auto max-w-[1200px] px-4 py-16"
+      id="comenzar"
+    >
+      <div
+        class="rounded-[var(--radius-tmc-frame)] bg-tmc-ink px-8 py-16 text-center md:px-16"
+      >
+        <h2
+          class="mx-auto mb-8 max-w-2xl text-tmc-section font-medium leading-[44px] text-tmc-canvas"
+          style="font-weight: 500;"
+        >
+          Empezá a ordenar tu cartera de clientes hoy.
+        </h2>
+        <a
+          class="inline-flex items-center justify-center rounded-[var(--radius-tmc-cta)] bg-tmc-canvas px-8 py-4 text-xl font-normal text-tmc-ink transition-colors hover:bg-tmc-neutral-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
+          href="/login"
+        >
+          Ingresar a TMC
+        </a>
+      </div>
+    </section>
+    <footer
+      class="bg-tmc-ink text-tmc-canvas"
+    >
+      <div
+        class="mx-auto max-w-[1200px] px-4 py-16"
+      >
+        <div
+          class="mb-12 flex items-center gap-2"
+        >
+          <span
+            class="text-base font-medium"
+            style="font-weight: 500;"
+          >
+            TMC
+          </span>
+          <span
+            class="text-sm text-tmc-canvas/70"
+          >
+            That's My Client
+          </span>
+        </div>
+        <div
+          class="grid grid-cols-2 gap-8 md:grid-cols-4"
+        >
+          <div>
+            <h3
+              class="mb-4 text-sm font-bold text-tmc-canvas"
+            >
+              Producto
+            </h3>
+            <ul
+              class="space-y-2"
+            >
+              <li>
+                <a
+                  class="text-sm text-tmc-canvas/70 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
+                  href="/"
+                >
+                  Qué hace
+                </a>
+              </li>
+              <li>
+                <a
+                  class="text-sm text-tmc-canvas/70 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
+                  href="/"
+                >
+                  Por qué TMC
+                </a>
+              </li>
+              <li>
+                <a
+                  class="text-sm text-tmc-canvas/70 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
+                  href="/"
+                >
+                  Comenzar
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3
+              class="mb-4 text-sm font-bold text-tmc-canvas"
+            >
+              Recursos
+            </h3>
+            <ul
+              class="space-y-2"
+            >
+              <li>
+                <a
+                  class="text-sm text-tmc-canvas/70 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
+                  href="/"
+                >
+                  Ingresar
+                </a>
+              </li>
+              <li>
+                <a
+                  class="text-sm text-tmc-canvas/70 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
+                  href="/"
+                >
+                  Documentación
+                </a>
+              </li>
+              <li>
+                <a
+                  class="text-sm text-tmc-canvas/70 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
+                  href="/"
+                >
+                  Soporte
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3
+              class="mb-4 text-sm font-bold text-tmc-canvas"
+            >
+              Compañía
+            </h3>
+            <ul
+              class="space-y-2"
+            >
+              <li>
+                <a
+                  class="text-sm text-tmc-canvas/70 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
+                  href="/"
+                >
+                  Acerca de
+                </a>
+              </li>
+              <li>
+                <a
+                  class="text-sm text-tmc-canvas/70 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
+                  href="/"
+                >
+                  Contacto
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3
+              class="mb-4 text-sm font-bold text-tmc-canvas"
+            >
+              Legal
+            </h3>
+            <ul
+              class="space-y-2"
+            >
+              <li>
+                <a
+                  class="text-sm text-tmc-canvas/70 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
+                  href="/"
+                >
+                  Privacidad
+                </a>
+              </li>
+              <li>
+                <a
+                  class="text-sm text-tmc-canvas/70 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
+                  href="/"
+                >
+                  Términos
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </main>
 </div>
 `;
