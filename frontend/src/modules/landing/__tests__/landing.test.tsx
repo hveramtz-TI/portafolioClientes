@@ -1,6 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import LandingPage from '@/app/(public)/page';
 import { metadata } from '@/app/(public)/page';
+import PublicLayout from '@/app/(public)/layout';
+
+jest.mock('next/font/google', () => ({
+  Inter: () => ({ variable: 'mock-inter-variable' }),
+}));
 
 jest.mock('next/link', () => {
   const MockLink = ({
@@ -103,5 +108,18 @@ describe('copy gate', () => {
     const { container } = render(<LandingPage />);
     const text = container.textContent ?? '';
     expect(text).not.toMatch(/disponible/i);
+  });
+});
+
+describe('D5 Inter font wiring', () => {
+  it('applies the Inter variable to the landing root wrapper', () => {
+    const { container } = render(
+      <PublicLayout>
+        <span>child</span>
+      </PublicLayout>
+    );
+    const wrapper = container.querySelector('.tmc-landing');
+    expect(wrapper).toBeInTheDocument();
+    expect(wrapper).toHaveStyle({ fontFamily: 'var(--font-inter)' });
   });
 });

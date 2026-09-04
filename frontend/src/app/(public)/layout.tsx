@@ -9,8 +9,8 @@ const inter = Inter({
 });
 
 const landingFont: CSSProperties = {
-  '--font-sans': 'var(--font-inter)',
-} as CSSProperties;
+  fontFamily: 'var(--font-inter)',
+};
 
 export default function PublicLayout({
   children,

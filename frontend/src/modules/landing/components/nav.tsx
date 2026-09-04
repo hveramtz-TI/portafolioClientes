@@ -13,7 +13,10 @@ export function LandingNav() {
         aria-label="Navegación principal"
         className="mx-auto flex max-w-[1200px] items-center justify-between rounded-full bg-tmc-ink px-6 py-3 text-tmc-canvas"
       >
-        <Link href="/" className="flex items-center gap-2">
+        <Link
+          href="/"
+          className="flex items-center gap-2 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
+        >
           <span className="text-base font-medium" style={{ fontWeight: 500 }}>
             TMC
           </span>
@@ -25,7 +28,7 @@ export function LandingNav() {
             <a
               key={anchor.href}
               href={anchor.href}
-              className="text-sm font-medium text-tmc-canvas/80 transition-colors hover:text-tmc-canvas"
+              className="rounded-sm text-sm font-medium text-tmc-canvas/80 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
             >
               {anchor.label}
             </a>
@@ -34,7 +37,7 @@ export function LandingNav() {
 
         <Link
           href="/login"
-          className="rounded-full bg-tmc-canvas px-4 py-2 text-sm font-medium text-tmc-ink transition-colors hover:bg-tmc-neutral-2"
+          className="rounded-full bg-tmc-canvas px-4 py-2 text-sm font-medium text-tmc-ink transition-colors hover:bg-tmc-neutral-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
         >
           Ingresar
         </Link>

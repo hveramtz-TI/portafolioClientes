@@ -33,7 +33,7 @@ export function LandingEditorial() {
 
           <Link
             href="/login"
-            className="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-tmc-canvas px-5 py-2 text-sm font-medium text-tmc-ink shadow-sm transition-colors hover:bg-tmc-neutral-2"
+            className="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-tmc-canvas px-5 py-2 text-sm font-medium text-tmc-ink transition-colors hover:bg-tmc-neutral-2"
           >
             Conocé TMC
           </Link>

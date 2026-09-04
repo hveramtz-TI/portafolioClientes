@@ -13,7 +13,7 @@ exports[`renders the public landing page unchanged 1`] = `
         class="mx-auto flex max-w-[1200px] items-center justify-between rounded-full bg-tmc-ink px-6 py-3 text-tmc-canvas"
       >
         <a
-          class="flex items-center gap-2"
+          class="flex items-center gap-2 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
           href="/"
         >
           <span
@@ -32,26 +32,26 @@ exports[`renders the public landing page unchanged 1`] = `
           class="hidden items-center gap-6 md:flex"
         >
           <a
-            class="text-sm font-medium text-tmc-canvas/80 transition-colors hover:text-tmc-canvas"
+            class="rounded-sm text-sm font-medium text-tmc-canvas/80 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
             href="#que-hace"
           >
             Qué hace
           </a>
           <a
-            class="text-sm font-medium text-tmc-canvas/80 transition-colors hover:text-tmc-canvas"
+            class="rounded-sm text-sm font-medium text-tmc-canvas/80 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
             href="#editorial"
           >
             Por qué TMC
           </a>
           <a
-            class="text-sm font-medium text-tmc-canvas/80 transition-colors hover:text-tmc-canvas"
+            class="rounded-sm text-sm font-medium text-tmc-canvas/80 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
             href="#comenzar"
           >
             Comenzar
           </a>
         </div>
         <a
-          class="rounded-full bg-tmc-canvas px-4 py-2 text-sm font-medium text-tmc-ink transition-colors hover:bg-tmc-neutral-2"
+          class="rounded-full bg-tmc-canvas px-4 py-2 text-sm font-medium text-tmc-ink transition-colors hover:bg-tmc-neutral-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
           href="/login"
         >
           Ingresar
@@ -235,7 +235,7 @@ exports[`renders the public landing page unchanged 1`] = `
             </span>
           </div>
           <a
-            class="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-tmc-canvas px-5 py-2 text-sm font-medium text-tmc-ink shadow-sm transition-colors hover:bg-tmc-neutral-2"
+            class="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-tmc-canvas px-5 py-2 text-sm font-medium text-tmc-ink transition-colors hover:bg-tmc-neutral-2"
             href="/login"
           >
             Conocé TMC
