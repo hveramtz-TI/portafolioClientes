@@ -61,6 +61,11 @@ Directorio central de las Historias de Usuario del proyecto **Portafolio de Clie
 | HU-053 | Gráfico de órdenes | Dashboard y finanzas | Baja | Pendiente |
 | HU-054 | Gráfico de clientes | Dashboard y finanzas | Baja | Pendiente |
 | HU-055 | Gráfico de ingresos | Dashboard y finanzas | Baja | Pendiente |
+| HU-056 | Generar y descargar PDF de portafolio (plantilla TMC) | Documento de Portafolio (PDF) | Alta | Pendiente |
+| HU-057 | Composición automática de proyectos (Completada + En progreso) | Documento de Portafolio (PDF) | Alta | Pendiente |
+| HU-058 | Anonimización del cliente con rubro visible | Documento de Portafolio (PDF) | Alta | Pendiente |
+| HU-059 | Redondeo de montos CLP a centena superior | Documento de Portafolio (PDF) | Media | Pendiente |
+| HU-060 | Servicios del snapshot con estado general | Documento de Portafolio (PDF) | Media | Pendiente |
 
 ## Estados
 
@@ -103,7 +108,7 @@ Como **[rol]**, quiero **[acción]** para **[beneficio]**.
 
 ## Instrucciones
 
-1. Numeración secuencial global: la próxima HU libre es `HU-056`.
+1. Numeración secuencial global: la próxima HU libre es `HU-061`.
 2. Una HU por archivo, nombre `HU-XXX.md`.
 3. Actualizar la tabla índice al agregar/modificar una HU.
 4. No inventar requisitos: si falta información, preguntar al usuario.
