@@ -18,22 +18,28 @@
         </include>
     </source>
     <php>
-        <env name="APP_ENV" value="testing"/>
-        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
-        <env name="BCRYPT_ROUNDS" value="4"/>
-        <env name="BROADCAST_CONNECTION" value="null"/>
-        <env name="CACHE_STORE" value="array"/>
-        <env name="DB_CONNECTION" value="pgsql"/>
-        <env name="DB_HOST" value="postgres"/>
-        <env name="DB_PORT" value="5432"/>
-        <env name="DB_DATABASE" value="portafolio_test"/>
-        <env name="DB_USERNAME" value="portafolio"/>
-        <env name="DB_PASSWORD" value="secret"/>
-        <env name="MAIL_MAILER" value="array"/>
-        <env name="QUEUE_CONNECTION" value="sync"/>
-        <env name="SESSION_DRIVER" value="array"/>
-        <env name="PULSE_ENABLED" value="false"/>
-        <env name="TELESCOPE_ENABLED" value="false"/>
-        <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <!-- Igual que phpunit.xml: <server> (no <env>) porque docker-compose
+             inyecta APP_ENV, DB_CONNECTION, etc. en $_SERVER y Laravel las lee
+             antes que $_ENV/getenv(). Solo <server> escribe en $_SERVER y
+             puede pisarlas. Con <env>, APP_ENV=local ganaba y las rutas de
+             escritura fallaban con 419 (CSRF no se saltea fuera de testing). -->
+        <server name="APP_ENV" value="testing"/>
+        <server name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <server name="BCRYPT_ROUNDS" value="4"/>
+        <server name="BROADCAST_CONNECTION" value="null"/>
+        <server name="CACHE_STORE" value="array"/>
+        <server name="DB_CONNECTION" value="pgsql"/>
+        <server name="DB_HOST" value="postgres"/>
+        <server name="DB_PORT" value="5432"/>
+        <server name="DB_DATABASE" value="portafolio_test"/>
+        <server name="DB_USERNAME" value="portafolio"/>
+        <server name="DB_PASSWORD" value="secret"/>
+        <server name="DB_URL" value=""/>
+        <server name="MAIL_MAILER" value="array"/>
+        <server name="QUEUE_CONNECTION" value="sync"/>
+        <server name="SESSION_DRIVER" value="array"/>
+        <server name="PULSE_ENABLED" value="false"/>
+        <server name="TELESCOPE_ENABLED" value="false"/>
+        <server name="NIGHTWATCH_ENABLED" value="false"/>
     </php>
 </phpunit>
