@@ -6,6 +6,7 @@ use App\Models\Categoria;
 use App\Models\Rubro;
 use App\Models\Service;
 use App\Models\User;
+use App\Models\UserCatalogItem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -186,5 +187,80 @@ class CategoriaApiTest extends TestCase
         $response = $this->getJson("/api/categorias/{$categoria->id}/services");
 
         $response->assertOk()->assertJsonCount(2);
+    }
+
+    public function test_admin_can_store_categoria(): void
+    {
+        $this->actingAsAdmin();
+
+        $rubro = Rubro::create(['name' => 'Informática']);
+
+        $response = $this->postJson('/api/categorias', [
+            'rubro_id' => $rubro->id,
+            'name' => 'Desarrollo web',
+            'description' => 'Sitios y tiendas',
+            'order' => 5,
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('name', 'Desarrollo web')
+            ->assertJsonPath('rubro_id', $rubro->id)
+            ->assertJsonPath('status', 'activo');
+
+        $this->assertDatabaseHas('categorias', [
+            'name' => 'Desarrollo web',
+            'rubro_id' => $rubro->id,
+            'order' => 5,
+        ]);
+    }
+
+    public function test_store_rejects_duplicate_name_in_same_rubro(): void
+    {
+        $this->actingAsAdmin();
+
+        $rubro = Rubro::create(['name' => 'Informática']);
+        Categoria::create(['rubro_id' => $rubro->id, 'name' => 'Web']);
+
+        $response = $this->postJson('/api/categorias', [
+            'rubro_id' => $rubro->id,
+            'name' => 'Web',
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    public function test_store_rejects_explicit_null_order(): void
+    {
+        $this->actingAsAdmin();
+
+        $rubro = Rubro::create(['name' => 'Informática']);
+
+        $response = $this->postJson('/api/categorias', [
+            'rubro_id' => $rubro->id,
+            'name' => 'Web',
+            'order' => null,
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    public function test_delete_categoria_with_forks_returns_409(): void
+    {
+        $this->actingAsAdmin();
+
+        $rubro = Rubro::create(['name' => 'Informática']);
+        $categoria = Categoria::create(['rubro_id' => $rubro->id, 'name' => 'Web']);
+        $owner = User::factory()->create();
+        UserCatalogItem::create([
+            'user_id' => $owner->id,
+            'item_type' => 'categoria',
+            'base_id' => $categoria->id,
+        ]);
+
+        $response = $this->deleteJson("/api/categorias/{$categoria->id}");
+
+        $response->assertStatus(409);
+
+        $this->assertDatabaseHas('categorias', ['id' => $categoria->id]);
     }
 }

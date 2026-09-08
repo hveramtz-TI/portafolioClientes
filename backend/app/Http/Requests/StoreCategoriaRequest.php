@@ -33,7 +33,9 @@ class StoreCategoriaRequest extends FormRequest
                 ),
             ],
             'description' => ['nullable', 'string'],
-            'order' => ['nullable', 'integer', 'min:0'],
+            // 'sometimes' (not 'nullable'): the column is NOT NULL DEFAULT 0 —
+            // an explicit null must fail validation (422), never reach the DB.
+            'order' => ['sometimes', 'integer', 'min:0'],
         ];
     }
 }

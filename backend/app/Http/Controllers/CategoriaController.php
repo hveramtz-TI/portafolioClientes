@@ -106,6 +106,17 @@ class CategoriaController extends Controller
             ], 409);
         }
 
+        $hasForks = \App\Models\UserCatalogItem::query()
+            ->where('item_type', 'categoria')
+            ->where('base_id', $categoria->id)
+            ->exists();
+
+        if ($hasForks) {
+            return response()->json([
+                'message' => 'La categoría tiene forks asociados y no puede eliminarse; desactívela.',
+            ], 409);
+        }
+
         $categoria->forceDelete();
 
         return response()->noContent();
