@@ -37,12 +37,12 @@ describe('LandingPage', () => {
 
     // Hero h1
     expect(
-      screen.getByRole('heading', { level: 1, name: /tu portafolio de clientes/i })
+      screen.getByRole('heading', { level: 1, name: /trabajo real.*portafolio profesional/i })
     ).toBeInTheDocument();
 
     // Value props heading
     expect(
-      screen.getByRole('heading', { level: 2, name: /qué hace la plataforma/i })
+      screen.getByRole('heading', { level: 2, name: /darle contexto a tu trabajo/i })
     ).toBeInTheDocument();
 
     // Editorial heading
@@ -69,6 +69,27 @@ describe('LandingPage', () => {
     expect(source).not.toContain('fetch(');
     expect(source).not.toContain('useAuth');
   });
+
+  it('uses the transformation copy and bounded visual contracts', () => {
+    const { container } = render(<LandingPage />);
+
+    expect(container.textContent).toMatch(/trabajo realizado/i);
+    expect(container.textContent).toMatch(/evidencia profesional/i);
+    expect(container.textContent).toMatch(/información organizada/i);
+    expect(screen.getByRole('list', { name: /transforma tu trabajo/i })).toBeInTheDocument();
+    expect(container.querySelector('nav')).toHaveClass('bg-tmc-surface', 'text-tmc-ink');
+    expect(container.querySelector('h1')).toHaveClass('text-[clamp(44px,6vw,64px)]');
+    expect(container.querySelector('article')).toHaveClass('p-6');
+  });
+
+  it('keeps footer links within available landing destinations', () => {
+    render(<LandingPage />);
+
+    expect(screen.getByRole('heading', { level: 2, name: /tu trabajo ya tiene una historia/i })).toBeInTheDocument();
+    expect(screen.getAllByRole('link', { name: 'Ingresar' }).some((link) => link.getAttribute('href') === '/login')).toBe(true);
+    const footer = screen.getByRole('contentinfo');
+    expect(Array.from(footer.querySelectorAll('a')).every((link) => link.getAttribute('href') !== '/')).toBe(true);
+  });
 });
 
 describe('placeholder contract (D9)', () => {
@@ -88,9 +109,10 @@ describe('placeholder contract (D9)', () => {
     const sm = screen.getByRole('main') ?? container.querySelector('main');
     expect(sm).not.toBeNull();
 
-    // Orbits SVG is decorative
-    const svg = container.querySelector('svg[aria-hidden="true"]');
+    // The hero orbit is decorative; its transformation stages remain text.
+    const svg = container.querySelector('section svg[aria-hidden="true"]');
     expect(svg).toBeInTheDocument();
+    expect(container.querySelectorAll('svg[aria-hidden="true"]')).toHaveLength(1);
   });
 });
 

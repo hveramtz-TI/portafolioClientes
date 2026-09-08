@@ -1,42 +1,74 @@
-import Link from 'next/link';
 import { PlaceholderSlot } from './placeholder';
+import { CtaButton } from './cta-button';
+import { LandingEyebrow } from './eyebrow';
 
 export function LandingHero() {
   return (
     <section className="mx-auto max-w-[1200px] px-4 pt-16 md:pt-24">
-      <div className="max-w-2xl">
-        <p className="mb-6 text-sm font-bold uppercase tracking-normal text-tmc-accent">
-          <span aria-hidden="true" className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-tmc-accent" />
-          Plataforma de gestión
-        </p>
+      <div className="grid items-center gap-12 md:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] md:gap-16">
+        <div className="max-w-2xl">
+          <LandingEyebrow className="mb-6">Del trabajo al portafolio</LandingEyebrow>
 
-        <h1
-          className="mb-6 text-tmc-hero font-medium leading-[64px] text-tmc-ink"
-          style={{ fontSize: 'var(--text-tmc-hero)', lineHeight: 'var(--text-tmc-hero--line-height)', fontWeight: 500 }}
-        >
-          Tu portafolio de clientes, en un solo lugar.
-        </h1>
+          <h1
+            className="mb-6 text-balance text-[clamp(44px,6vw,64px)] font-medium leading-[1] text-tmc-ink"
+            style={{ fontWeight: 500 }}
+          >
+            Tu trabajo real puede convertirse en tu portafolio profesional.
+          </h1>
 
-        <p className="mb-8 text-lg leading-relaxed text-tmc-neutral-5" style={{ fontWeight: 450 }}>
-          TMC (That&apos;s My Client) organiza tu relación con cada cliente y
-          empresa, su catálogo y sus solicitudes, para que tengas todo claro
-          antes de tu próxima reunión.
-        </p>
+          <p className="mb-8 max-w-xl text-pretty text-lg leading-relaxed text-tmc-neutral-5" style={{ fontWeight: 450 }}>
+            TMC te ayuda a pasar de trabajo realizado a información organizada,
+            evidencia profesional y un portafolio que habla por vos.
+          </p>
 
-        <Link
-          href="/login"
-          className="inline-flex items-center justify-center rounded-[var(--radius-tmc-cta)] bg-tmc-ink px-8 py-4 text-xl font-normal text-tmc-canvas transition-colors hover:bg-tmc-neutral-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent"
-        >
-          Ingresar
-        </Link>
-      </div>
+          <CtaButton href="/login" variant="dark" size="lg">
+            Ingresar
+          </CtaButton>
+        </div>
 
-      <div className="mt-12">
-        <PlaceholderSlot
-          label="hero-media"
-          aspect="16 / 9"
-          className="rounded-[var(--radius-tmc-frame)]"
-        />
+        <div className="relative mx-auto flex aspect-square w-full max-w-[560px] items-center justify-center md:translate-y-8">
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 520 420"
+            className="absolute inset-0 h-full w-full text-tmc-accent/60"
+            fill="none"
+          >
+            <ellipse
+              cx="260"
+              cy="210"
+              rx="220"
+              ry="132"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              transform="rotate(-14 260 210)"
+            />
+            <circle cx="77" cy="245" r="4" fill="currentColor" />
+            <circle cx="430" cy="143" r="4" fill="currentColor" />
+          </svg>
+
+          <div className="relative w-[72%] max-w-[420px]">
+            <PlaceholderSlot
+              label="hero-media"
+              aspect="16 / 9"
+              className="rounded-[var(--radius-tmc-frame)]"
+            />
+          </div>
+
+          <ol
+            aria-label="Cómo TMC transforma tu trabajo"
+            className="pointer-events-none absolute inset-0 list-none text-sm font-medium text-tmc-ink"
+          >
+            <li className="absolute left-0 top-[48%] -translate-y-1/2 rounded-full bg-tmc-surface px-3 py-2">
+              Trabajo real
+            </li>
+            <li className="absolute right-0 top-[22%] rounded-full bg-tmc-surface px-3 py-2">
+              Información organizada
+            </li>
+            <li className="absolute bottom-[12%] left-1/2 -translate-x-1/2 rounded-full bg-tmc-surface px-3 py-2">
+              Portafolio profesional
+            </li>
+          </ol>
+        </div>
       </div>
     </section>
   );

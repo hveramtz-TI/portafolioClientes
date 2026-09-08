@@ -2,18 +2,25 @@
 
 exports[`renders the public landing page unchanged 1`] = `
 <div>
+  <a
+    class="sr-only focus:not-sr-only focus-visible:fixed focus-visible:left-4 focus-visible:top-4 focus-visible:z-[60] focus-visible:rounded-md focus-visible:bg-tmc-ink focus-visible:px-4 focus-visible:py-3 focus-visible:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
+    href="#main-content"
+  >
+    Saltar al contenido principal
+  </a>
   <main
     class="bg-tmc-canvas text-tmc-ink"
+    id="main-content"
   >
     <header
       class="sticky top-4 z-50 px-4"
     >
       <nav
         aria-label="Navegación principal"
-        class="mx-auto flex max-w-[1200px] items-center justify-between rounded-full bg-tmc-ink px-6 py-3 text-tmc-canvas"
+        class="mx-auto flex max-w-[1200px] items-center justify-between rounded-full bg-tmc-surface px-6 py-3 text-tmc-ink"
       >
         <a
-          class="flex items-center gap-2 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
+          class="flex items-center gap-2 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent"
           href="/"
         >
           <span
@@ -32,26 +39,29 @@ exports[`renders the public landing page unchanged 1`] = `
           class="hidden items-center gap-6 md:flex"
         >
           <a
-            class="rounded-sm text-sm font-medium text-tmc-canvas/80 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
+            class="rounded-sm text-sm font-medium text-tmc-ink/75 transition-colors hover:text-tmc-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent"
             href="#que-hace"
           >
             Qué hace
           </a>
           <a
-            class="rounded-sm text-sm font-medium text-tmc-canvas/80 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
+            class="rounded-sm text-sm font-medium text-tmc-ink/75 transition-colors hover:text-tmc-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent"
             href="#editorial"
           >
             Por qué TMC
           </a>
           <a
-            class="rounded-sm text-sm font-medium text-tmc-canvas/80 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
+            class="rounded-sm text-sm font-medium text-tmc-ink/75 transition-colors hover:text-tmc-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent"
             href="#comenzar"
           >
             Comenzar
           </a>
         </div>
         <a
-          class="rounded-full bg-tmc-canvas px-4 py-2 text-sm font-medium text-tmc-ink transition-colors hover:bg-tmc-neutral-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
+          class="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap focus-visible:border-ring disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 hover:text-accent-foreground dark:hover:bg-accent/50 h-9 has-[>svg]:px-3 transition-colors outline-none focus-visible:ring-2 bg-tmc-surface text-tmc-ink hover:bg-tmc-neutral-2 focus-visible:ring-tmc-accent-light rounded-full px-4 py-2 text-sm font-medium"
+          data-size="default"
+          data-slot="button"
+          data-variant="ghost"
           href="/login"
         >
           Ingresar
@@ -62,73 +72,132 @@ exports[`renders the public landing page unchanged 1`] = `
       class="mx-auto max-w-[1200px] px-4 pt-16 md:pt-24"
     >
       <div
-        class="max-w-2xl"
-      >
-        <p
-          class="mb-6 text-sm font-bold uppercase tracking-normal text-tmc-accent"
-        >
-          <span
-            aria-hidden="true"
-            class="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-tmc-accent"
-          />
-          Plataforma de gestión
-        </p>
-        <h1
-          class="mb-6 text-tmc-hero font-medium leading-[64px] text-tmc-ink"
-          style="font-size: var(--text-tmc-hero); line-height: var(--text-tmc-hero--line-height); font-weight: 500;"
-        >
-          Tu portafolio de clientes, en un solo lugar.
-        </h1>
-        <p
-          class="mb-8 text-lg leading-relaxed text-tmc-neutral-5"
-          style="font-weight: 450;"
-        >
-          TMC (That's My Client) organiza tu relación con cada cliente y empresa, su catálogo y sus solicitudes, para que tengas todo claro antes de tu próxima reunión.
-        </p>
-        <a
-          class="inline-flex items-center justify-center rounded-[var(--radius-tmc-cta)] bg-tmc-ink px-8 py-4 text-xl font-normal text-tmc-canvas transition-colors hover:bg-tmc-neutral-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent"
-          href="/login"
-        >
-          Ingresar
-        </a>
-      </div>
-      <div
-        class="mt-12"
+        class="grid items-center gap-12 md:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] md:gap-16"
       >
         <div
-          aria-label="Imagen pendiente: hero-media"
-          class="bg-tmc-neutral-2 flex items-center justify-center overflow-hidden rounded-[var(--radius-tmc-frame)]"
-          data-slot="hero-media"
-          role="img"
-          style="aspect-ratio: 16 / 9;"
+          class="max-w-2xl"
         >
-          <span
-            class="sr-only"
+          <p
+            class="text-sm font-bold tracking-normal text-tmc-accent mb-6"
           >
-            Espacio reservado para imagen (
-            hero-media
-            )
-          </span>
+            <span
+              aria-hidden="true"
+              class="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-tmc-accent"
+            />
+            Del trabajo al portafolio
+          </p>
+          <h1
+            class="mb-6 text-balance text-[clamp(44px,6vw,64px)] font-medium leading-[1] text-tmc-ink"
+            style="font-weight: 500;"
+          >
+            Tu trabajo real puede convertirse en tu portafolio profesional.
+          </h1>
+          <p
+            class="mb-8 max-w-xl text-pretty text-lg leading-relaxed text-tmc-neutral-5"
+            style="font-weight: 450;"
+          >
+            TMC te ayuda a pasar de trabajo realizado a información organizada, evidencia profesional y un portafolio que habla por vos.
+          </p>
+          <a
+            class="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap focus-visible:border-ring disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 hover:text-accent-foreground dark:hover:bg-accent/50 h-9 has-[>svg]:px-3 transition-colors outline-none focus-visible:ring-2 bg-tmc-ink text-tmc-canvas hover:bg-tmc-neutral-6 focus-visible:ring-tmc-accent px-8 py-4 text-xl font-normal rounded-[var(--radius-tmc-cta)]"
+            data-size="default"
+            data-slot="button"
+            data-variant="ghost"
+            href="/login"
+          >
+            Ingresar
+          </a>
+        </div>
+        <div
+          class="relative mx-auto flex aspect-square w-full max-w-[560px] items-center justify-center md:translate-y-8"
+        >
+          <svg
+            aria-hidden="true"
+            class="absolute inset-0 h-full w-full text-tmc-accent/60"
+            fill="none"
+            viewBox="0 0 520 420"
+          >
+            <ellipse
+              cx="260"
+              cy="210"
+              rx="220"
+              ry="132"
+              stroke="currentColor"
+              stroke-width="1.5"
+              transform="rotate(-14 260 210)"
+            />
+            <circle
+              cx="77"
+              cy="245"
+              fill="currentColor"
+              r="4"
+            />
+            <circle
+              cx="430"
+              cy="143"
+              fill="currentColor"
+              r="4"
+            />
+          </svg>
+          <div
+            class="relative w-[72%] max-w-[420px]"
+          >
+            <div
+              aria-label="Imagen pendiente: hero-media"
+              class="bg-tmc-neutral-2 flex items-center justify-center overflow-hidden rounded-[var(--radius-tmc-frame)]"
+              data-slot="hero-media"
+              role="img"
+              style="aspect-ratio: 16 / 9;"
+            >
+              <span
+                class="sr-only"
+              >
+                Espacio reservado para imagen (
+                hero-media
+                )
+              </span>
+            </div>
+          </div>
+          <ol
+            aria-label="Cómo TMC transforma tu trabajo"
+            class="pointer-events-none absolute inset-0 list-none text-sm font-medium text-tmc-ink"
+          >
+            <li
+              class="absolute left-0 top-[48%] -translate-y-1/2 rounded-full bg-tmc-surface px-3 py-2"
+            >
+              Trabajo real
+            </li>
+            <li
+              class="absolute right-0 top-[22%] rounded-full bg-tmc-surface px-3 py-2"
+            >
+              Información organizada
+            </li>
+            <li
+              class="absolute bottom-[12%] left-1/2 -translate-x-1/2 rounded-full bg-tmc-surface px-3 py-2"
+            >
+              Portafolio profesional
+            </li>
+          </ol>
         </div>
       </div>
     </section>
     <section
-      class="mx-auto max-w-[1200px] px-4 py-16"
+      class="scroll-mt-28 mx-auto max-w-[1200px] px-4 py-16"
       id="que-hace"
     >
       <h2
-        class="mb-12 text-tmc-section font-medium text-tmc-ink"
+        class="mb-10 max-w-2xl text-balance text-[clamp(30px,4vw,36px)] font-medium leading-[1.2] text-tmc-ink"
       >
-        Qué hace la plataforma
+        Todo lo que necesitás para darle contexto a tu trabajo
       </h2>
       <div
         class="grid gap-4 sm:grid-cols-2"
       >
         <article
-          class="rounded-[var(--radius-tmc-pill)] bg-tmc-surface p-8 sm:p-12"
+          class="flex h-full flex-col justify-center rounded-[var(--radius-tmc-pill)] bg-tmc-surface p-6"
         >
           <h3
-            class="mb-2 text-tmc-card font-medium text-tmc-ink"
+            class="mb-2 text-balance text-tmc-card font-medium text-tmc-ink"
           >
             Clientes y empresas
           </h3>
@@ -139,10 +208,10 @@ exports[`renders the public landing page unchanged 1`] = `
           </p>
         </article>
         <article
-          class="rounded-[var(--radius-tmc-pill)] bg-tmc-surface p-8 sm:p-12"
+          class="flex h-full flex-col justify-center rounded-[var(--radius-tmc-pill)] bg-tmc-surface p-6"
         >
           <h3
-            class="mb-2 text-tmc-card font-medium text-tmc-ink"
+            class="mb-2 text-balance text-tmc-card font-medium text-tmc-ink"
           >
             Catálogo personalizable
           </h3>
@@ -153,10 +222,10 @@ exports[`renders the public landing page unchanged 1`] = `
           </p>
         </article>
         <article
-          class="rounded-[var(--radius-tmc-pill)] bg-tmc-surface p-8 sm:p-12"
+          class="flex h-full flex-col justify-center rounded-[var(--radius-tmc-pill)] bg-tmc-surface p-6"
         >
           <h3
-            class="mb-2 text-tmc-card font-medium text-tmc-ink"
+            class="mb-2 text-balance text-tmc-card font-medium text-tmc-ink"
           >
             Solicitudes y órdenes
           </h3>
@@ -167,10 +236,10 @@ exports[`renders the public landing page unchanged 1`] = `
           </p>
         </article>
         <article
-          class="rounded-[var(--radius-tmc-pill)] bg-tmc-surface p-8 sm:p-12"
+          class="flex h-full flex-col justify-center rounded-[var(--radius-tmc-pill)] bg-tmc-surface p-6"
         >
           <h3
-            class="mb-2 text-tmc-card font-medium text-tmc-ink"
+            class="mb-2 text-balance text-tmc-card font-medium text-tmc-ink"
           >
             Panel general
           </h3>
@@ -183,12 +252,12 @@ exports[`renders the public landing page unchanged 1`] = `
       </div>
     </section>
     <section
-      class="relative mx-auto max-w-[1200px] overflow-hidden px-4 py-16"
+      class="scroll-mt-28 relative mx-auto max-w-[1200px] overflow-hidden px-4 py-16"
       id="editorial"
     >
       <p
         aria-hidden="true"
-        class="pointer-events-none absolute left-4 top-8 text-[96px] font-bold leading-none tracking-tight text-tmc-surface select-none"
+        class="pointer-events-none absolute left-4 top-10 text-[clamp(56px,8vw,80px)] font-bold leading-none tracking-tight text-tmc-neutral-2/60 select-none"
       >
         TMC
       </p>
@@ -198,27 +267,6 @@ exports[`renders the public landing page unchanged 1`] = `
         <div
           class="relative flex justify-center"
         >
-          <svg
-            aria-hidden="true"
-            class="absolute inset-0 -z-10 h-full w-full text-tmc-accent/40"
-            fill="none"
-            viewBox="0 0 200 200"
-          >
-            <circle
-              cx="100"
-              cy="100"
-              r="80"
-              stroke="currentColor"
-              stroke-width="1.5"
-            />
-            <circle
-              cx="100"
-              cy="100"
-              r="55"
-              stroke="currentColor"
-              stroke-width="1"
-            />
-          </svg>
           <div
             aria-label="Imagen pendiente: portrait-1"
             class="bg-tmc-neutral-2 flex items-center justify-center overflow-hidden w-56 rounded-full md:w-64"
@@ -234,16 +282,10 @@ exports[`renders the public landing page unchanged 1`] = `
               )
             </span>
           </div>
-          <a
-            class="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-tmc-canvas px-5 py-2 text-sm font-medium text-tmc-ink transition-colors hover:bg-tmc-neutral-2"
-            href="/login"
-          >
-            Conocé TMC
-          </a>
         </div>
         <div>
           <p
-            class="mb-6 text-sm font-bold uppercase tracking-normal text-tmc-accent"
+            class="text-sm font-bold tracking-normal text-tmc-accent mb-6"
           >
             <span
               aria-hidden="true"
@@ -252,7 +294,7 @@ exports[`renders the public landing page unchanged 1`] = `
             Por qué TMC
           </p>
           <h2
-            class="mb-6 text-tmc-section font-medium leading-[44px] text-tmc-ink"
+            class="mb-6 text-balance text-[clamp(30px,4vw,36px)] font-medium leading-[1.2] text-tmc-ink"
           >
             Hecho para quienes llevan adelante cada relación.
           </h2>
@@ -265,20 +307,23 @@ exports[`renders the public landing page unchanged 1`] = `
       </div>
     </section>
     <section
-      class="mx-auto max-w-[1200px] px-4 py-16"
+      class="scroll-mt-28 mx-auto max-w-[1200px] px-4 py-16"
       id="comenzar"
     >
       <div
         class="rounded-[var(--radius-tmc-frame)] bg-tmc-ink px-8 py-16 text-center md:px-16"
       >
         <h2
-          class="mx-auto mb-8 max-w-2xl text-tmc-section font-medium leading-[44px] text-tmc-canvas"
+          class="mx-auto mb-8 max-w-2xl text-balance text-tmc-section font-medium leading-[44px] text-tmc-canvas"
           style="font-weight: 500;"
         >
           Empezá a ordenar tu cartera de clientes hoy.
         </h2>
         <a
-          class="inline-flex items-center justify-center rounded-[var(--radius-tmc-cta)] bg-tmc-canvas px-8 py-4 text-xl font-normal text-tmc-ink transition-colors hover:bg-tmc-neutral-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
+          class="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap focus-visible:border-ring disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 hover:text-accent-foreground dark:hover:bg-accent/50 h-9 has-[>svg]:px-3 transition-colors outline-none focus-visible:ring-2 bg-tmc-surface text-tmc-ink rounded-full hover:bg-tmc-neutral-2 focus-visible:ring-tmc-accent-light px-8 py-4 text-xl font-normal"
+          data-size="default"
+          data-slot="button"
+          data-variant="ghost"
           href="/login"
         >
           Ingresar a TMC
@@ -306,12 +351,17 @@ exports[`renders the public landing page unchanged 1`] = `
             That's My Client
           </span>
         </div>
+        <h2
+          class="mb-16 max-w-3xl text-balance text-[clamp(36px,6vw,64px)] font-medium leading-[1.05] text-tmc-canvas"
+        >
+          Tu trabajo ya tiene una historia. TMC te ayuda a presentarla.
+        </h2>
         <div
-          class="grid grid-cols-2 gap-8 md:grid-cols-4"
+          class="grid grid-cols-2 gap-8 md:grid-cols-3"
         >
           <div>
             <h3
-              class="mb-4 text-sm font-bold text-tmc-canvas"
+              class="mb-4 text-balance text-sm font-bold text-tmc-canvas"
             >
               Producto
             </h3>
@@ -321,7 +371,7 @@ exports[`renders the public landing page unchanged 1`] = `
               <li>
                 <a
                   class="text-sm text-tmc-canvas/70 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
-                  href="/"
+                  href="#que-hace"
                 >
                   Qué hace
                 </a>
@@ -329,7 +379,7 @@ exports[`renders the public landing page unchanged 1`] = `
               <li>
                 <a
                   class="text-sm text-tmc-canvas/70 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
-                  href="/"
+                  href="#editorial"
                 >
                   Por qué TMC
                 </a>
@@ -337,7 +387,7 @@ exports[`renders the public landing page unchanged 1`] = `
               <li>
                 <a
                   class="text-sm text-tmc-canvas/70 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
-                  href="/"
+                  href="#comenzar"
                 >
                   Comenzar
                 </a>
@@ -346,7 +396,7 @@ exports[`renders the public landing page unchanged 1`] = `
           </div>
           <div>
             <h3
-              class="mb-4 text-sm font-bold text-tmc-canvas"
+              class="mb-4 text-balance text-sm font-bold text-tmc-canvas"
             >
               Recursos
             </h3>
@@ -356,32 +406,16 @@ exports[`renders the public landing page unchanged 1`] = `
               <li>
                 <a
                   class="text-sm text-tmc-canvas/70 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
-                  href="/"
+                  href="/login"
                 >
                   Ingresar
-                </a>
-              </li>
-              <li>
-                <a
-                  class="text-sm text-tmc-canvas/70 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
-                  href="/"
-                >
-                  Documentación
-                </a>
-              </li>
-              <li>
-                <a
-                  class="text-sm text-tmc-canvas/70 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
-                  href="/"
-                >
-                  Soporte
                 </a>
               </li>
             </ul>
           </div>
           <div>
             <h3
-              class="mb-4 text-sm font-bold text-tmc-canvas"
+              class="mb-4 text-balance text-sm font-bold text-tmc-canvas"
             >
               Compañía
             </h3>
@@ -391,44 +425,9 @@ exports[`renders the public landing page unchanged 1`] = `
               <li>
                 <a
                   class="text-sm text-tmc-canvas/70 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
-                  href="/"
+                  href="#editorial"
                 >
                   Acerca de
-                </a>
-              </li>
-              <li>
-                <a
-                  class="text-sm text-tmc-canvas/70 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
-                  href="/"
-                >
-                  Contacto
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3
-              class="mb-4 text-sm font-bold text-tmc-canvas"
-            >
-              Legal
-            </h3>
-            <ul
-              class="space-y-2"
-            >
-              <li>
-                <a
-                  class="text-sm text-tmc-canvas/70 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
-                  href="/"
-                >
-                  Privacidad
-                </a>
-              </li>
-              <li>
-                <a
-                  class="text-sm text-tmc-canvas/70 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
-                  href="/"
-                >
-                  Términos
                 </a>
               </li>
             </ul>

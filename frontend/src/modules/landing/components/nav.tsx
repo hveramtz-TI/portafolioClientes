@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { CtaButton } from './cta-button';
 
 const anchors = [
   { href: '#que-hace', label: 'Qué hace' },
@@ -11,11 +12,11 @@ export function LandingNav() {
     <header className="sticky top-4 z-50 px-4">
       <nav
         aria-label="Navegación principal"
-        className="mx-auto flex max-w-[1200px] items-center justify-between rounded-full bg-tmc-ink px-6 py-3 text-tmc-canvas"
+        className="mx-auto flex max-w-[1200px] items-center justify-between rounded-full bg-tmc-surface px-6 py-3 text-tmc-ink"
       >
         <Link
           href="/"
-          className="flex items-center gap-2 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
+          className="flex items-center gap-2 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent"
         >
           <span className="text-base font-medium" style={{ fontWeight: 500 }}>
             TMC
@@ -28,19 +29,16 @@ export function LandingNav() {
             <a
               key={anchor.href}
               href={anchor.href}
-              className="rounded-sm text-sm font-medium text-tmc-canvas/80 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
+              className="rounded-sm text-sm font-medium text-tmc-ink/75 transition-colors hover:text-tmc-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent"
             >
               {anchor.label}
             </a>
           ))}
         </div>
 
-        <Link
-          href="/login"
-          className="rounded-full bg-tmc-canvas px-4 py-2 text-sm font-medium text-tmc-ink transition-colors hover:bg-tmc-neutral-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
-        >
+        <CtaButton href="/login" variant="light" size="sm">
           Ingresar
-        </Link>
+        </CtaButton>
       </nav>
     </header>
   );

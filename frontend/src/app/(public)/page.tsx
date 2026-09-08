@@ -14,13 +14,21 @@ export const metadata: Metadata = {
 
 export default function LandingPage() {
   return (
-    <main className="bg-tmc-canvas text-tmc-ink">
-      <LandingNav />
-      <LandingHero />
-      <LandingValueProps />
-      <LandingEditorial />
-      <LandingCtaBand />
-      <LandingFooter />
-    </main>
+    <>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus-visible:fixed focus-visible:left-4 focus-visible:top-4 focus-visible:z-[60] focus-visible:rounded-md focus-visible:bg-tmc-ink focus-visible:px-4 focus-visible:py-3 focus-visible:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
+      >
+        Saltar al contenido principal
+      </a>
+      <main id="main-content" className="bg-tmc-canvas text-tmc-ink">
+        <LandingNav />
+        <LandingHero />
+        <LandingValueProps />
+        <LandingEditorial />
+        <LandingCtaBand />
+        <LandingFooter />
+      </main>
+    </>
   );
 }

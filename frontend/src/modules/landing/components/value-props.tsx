@@ -23,18 +23,18 @@ const valueProps = [
 
 export function LandingValueProps() {
   return (
-    <section id="que-hace" className="mx-auto max-w-[1200px] px-4 py-16">
-      <h2 className="mb-12 text-tmc-section font-medium text-tmc-ink">
-        Qué hace la plataforma
+    <section id="que-hace" className="scroll-mt-28 mx-auto max-w-[1200px] px-4 py-16">
+      <h2 className="mb-10 max-w-2xl text-balance text-[clamp(30px,4vw,36px)] font-medium leading-[1.2] text-tmc-ink">
+        Todo lo que necesitás para darle contexto a tu trabajo
       </h2>
 
       <div className="grid gap-4 sm:grid-cols-2">
         {valueProps.map((prop) => (
           <article
             key={prop.title}
-            className="rounded-[var(--radius-tmc-pill)] bg-tmc-surface p-8 sm:p-12"
+            className="flex h-full flex-col justify-center rounded-[var(--radius-tmc-pill)] bg-tmc-surface p-6"
           >
-            <h3 className="mb-2 text-tmc-card font-medium text-tmc-ink">
+            <h3 className="mb-2 text-balance text-tmc-card font-medium text-tmc-ink">
               {prop.title}
             </h3>
             <p className="text-base leading-relaxed text-tmc-neutral-5">

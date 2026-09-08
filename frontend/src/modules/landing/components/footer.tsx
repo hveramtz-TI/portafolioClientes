@@ -3,19 +3,19 @@ import Link from 'next/link';
 const columns = [
   {
     title: 'Producto',
-    links: ['Qué hace', 'Por qué TMC', 'Comenzar'],
+    links: [
+      { label: 'Qué hace', href: '#que-hace' },
+      { label: 'Por qué TMC', href: '#editorial' },
+      { label: 'Comenzar', href: '#comenzar' },
+    ],
   },
   {
     title: 'Recursos',
-    links: ['Ingresar', 'Documentación', 'Soporte'],
+    links: [{ label: 'Ingresar', href: '/login' }],
   },
   {
     title: 'Compañía',
-    links: ['Acerca de', 'Contacto'],
-  },
-  {
-    title: 'Legal',
-    links: ['Privacidad', 'Términos'],
+    links: [{ label: 'Acerca de', href: '#editorial' }],
   },
 ];
 
@@ -30,20 +30,24 @@ export function LandingFooter() {
           <span className="text-sm text-tmc-canvas/70">That&apos;s My Client</span>
         </div>
 
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+        <h2 className="mb-16 max-w-3xl text-balance text-[clamp(36px,6vw,64px)] font-medium leading-[1.05] text-tmc-canvas">
+          Tu trabajo ya tiene una historia. TMC te ayuda a presentarla.
+        </h2>
+
+        <div className="grid grid-cols-2 gap-8 md:grid-cols-3">
           {columns.map((column) => (
             <div key={column.title}>
-              <h3 className="mb-4 text-sm font-bold text-tmc-canvas">
+              <h3 className="mb-4 text-balance text-sm font-bold text-tmc-canvas">
                 {column.title}
               </h3>
               <ul className="space-y-2">
                 {column.links.map((link) => (
-                  <li key={link}>
+                  <li key={link.label}>
                     <Link
-                      href="/"
+                      href={link.href}
                       className="text-sm text-tmc-canvas/70 transition-colors hover:text-tmc-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tmc-accent-light"
                     >
-                      {link}
+                      {link.label}
                     </Link>
                   </li>
                 ))}
