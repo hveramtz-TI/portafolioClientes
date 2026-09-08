@@ -1,7 +1,7 @@
 # Planning — Rubros, Categorías y Servicios
 
 **Fecha:** 2026-08-28
-**Estado:** ⏸️ **Pospuesto (2026-09-04)** — SDD pausada tras Slice 1/7 (PR #6 open hacia el tracker `feat/catalog-rubros-categorias-servicios`). Se retoma en un sprint posterior; el sprint actual es `planning4.md` (Landing Page del Producto).
+**Estado:** 🔵 **En progreso (retomado 2026-09-08)** — Slices 1 y 2 (de 7) integrados y verificados; el detalle en *Registro de progreso* al final. Pendientes: Slices 3-7 (fork resolver/cascade, API de forks, seeders, frontend).
 **Objetivo:** Implementar el catálogo personalizable de rubros, categorías y servicios sobre el modelo híbrido (catálogo base global + fork personal por usuario), incluyendo CRUD, lifecycle (desactivar/eliminar/reactivar), seeders del catálogo base y personalización sin alterar la base ni afectar a otros usuarios.
 
 ## Contexto
@@ -116,3 +116,35 @@ Los siguientes puntos quedan **abiertos** y se resolverán en la fase de SDD-des
 - **Auditoría de cambios de status** (registro de quién/cuándo desactivó o reactivó).
 - **Cache warmup** del catálogo base en Redis (p. ej. claves `catalog:rubros|categorias|services`, TTL 24h) — marcado como opcional en el flujo de seeders.
 - **Mecánica de transacciones** concretas (p. ej. atomicidad del fork en cascada y de los seeders) y estrategia exacta de persistencia del hard delete (`SoftDeletes` + `forceDelete()`), que no altera las reglas de autorización ni cascada definidas aquí.
+
+---
+
+## Registro de progreso
+
+### 2026-09-08 — Slices 1 y 2 integrados en `main`
+
+Se retomó el sprint pospuesto. Estado del chain de 7 slices:
+
+| Slice | Alcance | PR | Estado |
+|-------|---------|----|--------|
+| 1/7 | Migraciones + models (esquema híbrido) | #6 | ✅ Merged al tracker |
+| 2a | API base **rubros** (admin) | #8 | ✅ Merged al tracker |
+| 2b | API base **categorías** (admin) | #9 | ✅ Merged al tracker |
+| 2c | API base **servicios** (admin) + move + tags | #10 | ✅ Merged al tracker |
+| 3-7 | Fork resolver/cascade, API de forks, seeders, frontend | — | ⬜ Pendiente |
+
+**Integración a `main`:** merge tracker→main en `4922634` (PR #11). El tracker quedó sincronizado con `main` para que el Slice 3 nazca con todo.
+
+**Verificación en verde (ambos motores):** suite completa **90 tests / 234 assertions** en SQLite **y** PostgreSQL, medida sobre `main` ya fusionado y corriendo por los bind mounts de desarrollo (sin rebuild).
+
+**Review adversarial del stack 2a/2b/2c (antes de mergear):** detectó y se corrigieron 3 blockers con evidencia RED→GREEN:
+
+- **B1/B2:** `RubroController::destroy` y `CategoriaController::destroy` no chequeaban forks de usuario (`UserCatalogItem.base_id`) → un admin podía `forceDelete` dejando `base_id` colgado. Añadido guard 409 (mismo patrón que `ServiceController`). Cubre **D9** (eliminación de base solo si 0 forks y 0 relaciones) y **HU-016/HU-020**.
+- **B3:** `order` (`StoreCategoriaRequest`) y `categoria_id` (`UpdateServiceRequest`) usaban `nullable`, dejando pasar un `null` explícito contra columnas NOT NULL → 500 vía API. Cambiado a `sometimes` → 422 correcto. Cubre **D5**/reglas de request.
+- **Criticals de cobertura:** +store tests de categorías, +test del guard de forks de servicios, +aserción de round-trip de `tags` (cast `array`). Pint normalizado en los 12 archivos del catálogo.
+
+**Infraestructura de dev (necesaria para poder verificar):** se agregó bind-mount del código del backend al compose de desarrollo (`docker-compose.override.yml`) y se arregló `test-pg.sh`/`phpunit-pg.xml` (`<env>`→`<server>` + PHPUnit directo), porque antes la imagen buzoneaba el código y los tests del backend corrían contra código viejo.
+
+**HUs afectadas:** **sin cambio de estado** — el backend de la API base está implementado y verificado, pero las HUs HU-013–HU-025 describen la funcionalidad de usuario **end-to-end** (requiere el modelo de fork — Slice 3 — y el frontend — Slices 5-7). Marcarlas *Implementada* ahora sería prematuro y falso; el catálogo aún no es operable por un usuario normal. Se actualizarán al cerrar el epic.
+
+**Pendiente administrativo:** cerrar el token `sdd-attempt` de remediación (el ledger lo dejó `blocked` porque los merges de PR ocurrieron con el intento abierto; requiere un `reset` explícito de maintainer, que es decisión deliberada y no automática).
