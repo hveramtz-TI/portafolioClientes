@@ -33,6 +33,30 @@ COPY . .
 
 CMD ["npm", "test"]
 
+# ============ Development ============
+# Servidor de desarrollo con hot reload (target: dev).
+# docker-compose.override.yml monta ./src y ./public del host sobre
+# /app/src y /app/public: al guardar un archivo (Ctrl+S), next dev
+# recompila solo lo tocado y el navegador se actualiza solo (HMR).
+# next dev escucha por defecto en 0.0.0.0 (verificado en los docs de
+# Next 16 incluídos), así que el mapeo de puertos de Docker funciona
+# sin flags extra.
+FROM node:20-alpine AS dev
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+# Source base para el build inicial; el bind mount del override lo pisa
+# en runtime, por eso editar en el host no requiere reconstruir la imagen.
+COPY . .
+
+ENV NODE_ENV=development
+EXPOSE 3000
+
+CMD ["npm", "run", "dev"]
+
 # ============ Runner ============
 FROM node:20-alpine AS runner
 WORKDIR /app

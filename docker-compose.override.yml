@@ -1,0 +1,36 @@
+# ===========================================
+# Overrides de desarrollo local — compose lo carga AUTOMÁTICAMENTE
+# al estar junto a docker-compose.yml (no hay que pasar -f).
+#
+# Qué hace:
+#   - Cambia `frontend` al target `dev` del Dockerfile (next dev, no build)
+#   - Monta ./frontend/src y ./frontend/public del host dentro del
+#     contenedor → guardás un archivo (Ctrl+S) y localhost:3010 se
+#     actualiza solo (hot reload / HMR)
+#
+# Lo que NO cambia:
+#   - Puerto 3010, red, healthcheck, backend, postgres, redis, minio
+#
+# Para levantar el stack en modo producción (sin este override):
+#   docker compose -f docker-compose.yml up -d
+#
+# Requisito: primero vez o después de cambiar package.json, reconstruir:
+#   docker compose build frontend
+# ===========================================
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: dev
+    environment:
+      - NODE_ENV=development
+      # apiFetch corre en el NAVEGADOR: la URL debe ser el mapeo del host
+      # (localhost:8010), no la red interna de Docker (backend:8000).
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8010}
+    volumes:
+      # Solo src y public: los artefactos de next dev (.next/, node_modules/)
+      # quedan dentro de la imagen y no ensucian ni pisan permisos del host.
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
