@@ -5,6 +5,7 @@ use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\RubroController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
@@ -89,6 +90,11 @@ Route::middleware([
             Route::patch('/categorias/{categoria}/deactivate', [CategoriaController::class, 'deactivate']);
             Route::patch('/categorias/{categoria}/reactivate', [CategoriaController::class, 'reactivate']);
             Route::apiResource('categorias', CategoriaController::class)->only(['index', 'store', 'update', 'destroy']);
+
+            // Base catalog (services)
+            Route::patch('/services/{service}/deactivate', [ServiceController::class, 'deactivate']);
+            Route::patch('/services/{service}/reactivate', [ServiceController::class, 'reactivate']);
+            Route::apiResource('services', ServiceController::class)->only(['index', 'store', 'update', 'destroy']);
         });
     });
 });
