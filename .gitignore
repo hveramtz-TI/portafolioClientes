@@ -54,3 +54,6 @@ frontend/out/
 
 # OpenCode internals
 .opencode/node_modules/
+
+# Local agent state
+.gentle-ai-default-agent.json
