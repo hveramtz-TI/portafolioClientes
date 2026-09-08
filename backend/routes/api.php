@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\RubroController;
@@ -82,6 +83,12 @@ Route::middleware([
             Route::patch('/rubros/{rubro}/deactivate', [RubroController::class, 'deactivate']);
             Route::patch('/rubros/{rubro}/reactivate', [RubroController::class, 'reactivate']);
             Route::apiResource('rubros', RubroController::class)->only(['index', 'store', 'update', 'destroy']);
+
+            // Base catalog (categorias)
+            Route::get('/categorias/{categoria}/services', [CategoriaController::class, 'services']);
+            Route::patch('/categorias/{categoria}/deactivate', [CategoriaController::class, 'deactivate']);
+            Route::patch('/categorias/{categoria}/reactivate', [CategoriaController::class, 'reactivate']);
+            Route::apiResource('categorias', CategoriaController::class)->only(['index', 'store', 'update', 'destroy']);
         });
     });
 });
