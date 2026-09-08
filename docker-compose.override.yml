@@ -7,6 +7,16 @@
 #   - Monta ./frontend/src y ./frontend/public del host dentro del
 #     contenedor → guardás un archivo (Ctrl+S) y localhost:3010 se
 #     actualiza solo (hot reload / HMR)
+#   - Monta el código fuente del backend (app, config, routes, database,
+#     tests + phpunit*.xml + bootstrap/app.php) sobre la imagen: los
+#     `docker compose exec backend ...` ven TUS archivos al instante,
+#     sin `docker compose build backend` en cada ciclo.
+#     NO se montan vendor/ ni bootstrap/cache/ ni storage/: son artefactos
+#     de la imagen (el host tiene un vendor propio y caches viejos dueños
+#     root que romperían package discovery). composer.json tampoco: si
+#     cambiás dependencias, hace falta rebuild (igual que package.json
+#     del frontend). El autoloader usa -o (no -a), así que las clases
+#     NUEVAS de app/ se descubren por PSR-4 sin rebuild.
 #
 # Lo que NO cambia:
 #   - Puerto 3010, red, healthcheck, backend, postgres, redis, minio
@@ -34,3 +44,24 @@ services:
       # quedan dentro de la imagen y no ensucian ni pisan permisos del host.
       - ./frontend/src:/app/src
       - ./frontend/public:/app/public
+
+  backend:
+    volumes:
+      # Código que se edita en el ciclo diario, montado vivo sobre la imagen.
+      - ./backend/app:/var/www/app
+      - ./backend/config:/var/www/config
+      - ./backend/routes:/var/www/routes
+      - ./backend/database:/var/www/database
+      - ./backend/tests:/var/www/tests
+      # Configs de tests y entrypoints que cambiaban poco pero quedaban
+      # "horneados" y provocaron el incidente del 2026-09-08 (el contenedor
+      # corrió un phpunit-pg.xml viejo y el migrate:fresh pegó contra la DB
+      # de desarrollo). Con mount vivo, esa clase de bug no puede volver.
+      - ./backend/phpunit.xml:/var/www/phpunit.xml
+      - ./backend/phpunit-pg.xml:/var/www/phpunit-pg.xml
+      - ./backend/artisan:/var/www/artisan
+      - ./backend/bootstrap/app.php:/var/www/bootstrap/app.php
+      - ./backend/bootstrap/providers.php:/var/www/bootstrap/providers.php
+      # OJO: los named volumes de backend-storage/backend-logs del
+      # docker-compose.yml se heredan igual acá (compose hace merge de
+      # listas de volúmenes); no hay que repetirlos.
