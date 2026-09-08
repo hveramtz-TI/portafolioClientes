@@ -6,13 +6,13 @@
 
 ## Reordenamiento de sprint
 
-- **Planning 3 (Rubros, Categorías y Servicios): pospuesto** para un sprint posterior. Su SDD change `catalog-rubros-categorias-servicios` queda pausada en Slice 1/7 (migraciones + modelos commiteados, **PR #6 open** hacia el tracker `feat/catalog-rubros-categorias-servicios`). Fases 2–7 sin iniciar. No se cierra ni archiva nada.
+- **Planning 3 (Rubros, Categorías y Servicios): en progreso** desde 2026-09-08. Los Slices 1 y 2 ya están integrados en `main` (PR #6 y PRs #8/#9/#10, integración final en PR #11). Los Slices 3-7 siguen pendientes; no se cierra ni archiva nada hasta completar el epic.
 - Este planning es el sprint actual: **frontend únicamente**.
 
 ## Contexto
 
 - Stack: Next.js 16 (App Router) · React 19 · Tailwind CSS 4 · TypeScript · **shadcn/ui**. Backend Laravel 13 no interviene.
-- planning1 (Auth + Roles) y planning2 (Clientes y empresas): implementados. planning3: pausado (ver arriba).
+- planning1 (Auth + Roles) y planning2 (Clientes y empresas): implementados. planning3: en progreso (ver arriba).
 - Hoy `/` redirige al login (protección vía `proxy.ts` de Next.js 16).
 - Referencia de diseño: `Desing/` es un **snapshot auto-extraído de mastercard.com**, no una guía oficial.
   - `mastercard-DESIGN.md` (prosa): brief de estilo confiable y fuente de verdad del lenguaje visual.

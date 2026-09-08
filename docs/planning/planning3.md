@@ -9,7 +9,7 @@
 - Stack: Next.js 16 (App Router) · React 19 · Tailwind CSS 4 · TypeScript · Laravel 13 · PostgreSQL 16 · Redis 7 · MinIO. Componentes UI con **shadcn/ui**.
 - **planning1 (Auth + Roles):** implementado. Sanctum cookie-based (SPA), roles `admin`/`user`, UUIDv7 PK en `users`, middleware `EnsureRole`, login + seeder admin (sin registro público).
 - **planning2 (Clientes y empresas):** implementado. Modelos `Client` y `Company`, RUT único condicional, estados Activo/Desactivado, seeders ordenados (`CompanySeeder` antes de `ClientSeeder`), shadcn/ui en formularios.
-- **Estado actual del catálogo:** no existe. No hay modelos `Rubro`/`Categoria`/`Service`/`UserCatalogItem` ni rutas de catálogo. Esta épica construye el modelo híbrido completo y sus APIs; el perfil público y las órdenes de trabajo (que consumen este catálogo) son épicas posteriores.
+- **Estado actual del catálogo:** Slices 1 y 2 implementados y verificados: existen las migraciones, modelos y API base administrativa de `Rubro`/`Categoria`/`Service` bajo `auth:sanctum` + `role:admin`. El modelo de forks, seeders y frontend siguen pendientes en Slices 3-7; el perfil público y las órdenes de trabajo (que consumen este catálogo) son épicas posteriores.
 - Jerarquía: `Rubro → Categoría → Servicio`. Categorías y servicios en **lenguaje natural** orientado al cliente; términos técnicos (`frontend`, `backend`, `fullstack`, etc.) solo como **etiquetas internas opcionales**.
 - Reglas de proyecto: KISS, YAGNI, feature-first, Clean Architecture, UUID como PK, Docker-first, migraciones como fuente de verdad del esquema.
 
