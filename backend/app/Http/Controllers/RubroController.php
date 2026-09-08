@@ -100,6 +100,17 @@ class RubroController extends Controller
             ], 409);
         }
 
+        $hasForks = \App\Models\UserCatalogItem::query()
+            ->where('item_type', 'rubro')
+            ->where('base_id', $rubro->id)
+            ->exists();
+
+        if ($hasForks) {
+            return response()->json([
+                'message' => 'El rubro tiene forks asociados y no puede eliminarse; desactívelo.',
+            ], 409);
+        }
+
         $rubro->forceDelete();
 
         return response()->noContent();

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Categoria;
 use App\Models\Rubro;
 use App\Models\User;
+use App\Models\UserCatalogItem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -188,6 +189,25 @@ class RubroApiTest extends TestCase
 
         $rubro = Rubro::create(['name' => 'Con categorías']);
         Categoria::create(['rubro_id' => $rubro->id, 'name' => 'Web']);
+
+        $response = $this->deleteJson("/api/rubros/{$rubro->id}");
+
+        $response->assertStatus(409);
+
+        $this->assertDatabaseHas('rubros', ['id' => $rubro->id]);
+    }
+
+    public function test_delete_rubro_with_forks_returns_409(): void
+    {
+        $this->actingAsAdmin();
+
+        $rubro = Rubro::create(['name' => 'Forkkeado']);
+        $owner = User::factory()->create();
+        UserCatalogItem::create([
+            'user_id' => $owner->id,
+            'item_type' => 'rubro',
+            'base_id' => $rubro->id,
+        ]);
 
         $response = $this->deleteJson("/api/rubros/{$rubro->id}");
 
