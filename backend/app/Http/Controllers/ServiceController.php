@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreServiceRequest;
 use App\Http\Requests\UpdateServiceRequest;
 use App\Models\Service;
+use App\Models\UserCatalogItem;
 use Illuminate\Http\Request;
 
 class ServiceController extends Controller
@@ -90,7 +91,7 @@ class ServiceController extends Controller
      */
     public function destroy(Service $service)
     {
-        $hasForks = \App\Models\UserCatalogItem::query()
+        $hasForks = UserCatalogItem::query()
             ->where('item_type', 'service')
             ->where('base_id', $service->id)
             ->exists();

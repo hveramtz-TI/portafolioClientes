@@ -6,6 +6,7 @@ use App\Models\Categoria;
 use App\Models\Rubro;
 use App\Models\Service;
 use App\Models\User;
+use App\Models\UserCatalogItem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -25,7 +26,7 @@ class ServiceApiTest extends TestCase
 
     private function makeCategoria(string $name = 'Web'): Categoria
     {
-        $rubro = Rubro::create(['name' => 'Rubro ' . $name . ' ' . uniqid()]);
+        $rubro = Rubro::create(['name' => 'Rubro '.$name.' '.uniqid()]);
 
         return Categoria::create(['rubro_id' => $rubro->id, 'name' => $name]);
     }
@@ -80,7 +81,8 @@ class ServiceApiTest extends TestCase
         $response->assertCreated()
             ->assertJsonPath('title', 'Landing page')
             ->assertJsonPath('value', 450000)
-            ->assertJsonPath('status', 'activo');
+            ->assertJsonPath('status', 'activo')
+            ->assertJsonPath('tags', ['frontend', 'fullstack']);
 
         $this->assertDatabaseHas('services', ['title' => 'Landing page', 'value' => 450000]);
     }
@@ -242,5 +244,41 @@ class ServiceApiTest extends TestCase
         $response->assertNoContent();
 
         $this->assertDatabaseMissing('services', ['id' => $service->id]);
+    }
+
+    public function test_delete_service_with_forks_returns_409(): void
+    {
+        $this->actingAsAdmin();
+
+        $categoria = $this->makeCategoria();
+        $service = Service::create(['categoria_id' => $categoria->id, 'title' => 'Landing', 'value' => 100]);
+        $owner = User::factory()->create();
+        UserCatalogItem::create([
+            'user_id' => $owner->id,
+            'item_type' => 'service',
+            'base_id' => $service->id,
+        ]);
+
+        $response = $this->deleteJson("/api/services/{$service->id}");
+
+        $response->assertStatus(409);
+
+        $this->assertDatabaseHas('services', ['id' => $service->id]);
+    }
+
+    public function test_update_rejects_null_categoria_id(): void
+    {
+        $this->actingAsAdmin();
+
+        $categoria = $this->makeCategoria();
+        $service = Service::create(['categoria_id' => $categoria->id, 'title' => 'Landing', 'value' => 100]);
+
+        $response = $this->putJson("/api/services/{$service->id}", [
+            'title' => 'Landing page',
+            'value' => 100,
+            'categoria_id' => null,
+        ]);
+
+        $response->assertStatus(422);
     }
 }

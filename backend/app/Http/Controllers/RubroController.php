@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreRubroRequest;
 use App\Http\Requests\UpdateRubroRequest;
 use App\Models\Rubro;
+use App\Models\UserCatalogItem;
 use Illuminate\Http\Request;
 
 class RubroController extends Controller
@@ -100,7 +101,7 @@ class RubroController extends Controller
             ], 409);
         }
 
-        $hasForks = \App\Models\UserCatalogItem::query()
+        $hasForks = UserCatalogItem::query()
             ->where('item_type', 'rubro')
             ->where('base_id', $rubro->id)
             ->exists();

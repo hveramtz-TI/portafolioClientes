@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCategoriaRequest;
 use App\Http\Requests\UpdateCategoriaRequest;
 use App\Models\Categoria;
+use App\Models\UserCatalogItem;
 use Illuminate\Http\Request;
 
 class CategoriaController extends Controller
@@ -106,7 +107,7 @@ class CategoriaController extends Controller
             ], 409);
         }
 
-        $hasForks = \App\Models\UserCatalogItem::query()
+        $hasForks = UserCatalogItem::query()
             ->where('item_type', 'categoria')
             ->where('base_id', $categoria->id)
             ->exists();

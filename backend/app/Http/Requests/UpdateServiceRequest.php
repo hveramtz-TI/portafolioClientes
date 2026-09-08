@@ -19,7 +19,10 @@ class UpdateServiceRequest extends StoreServiceRequest
         $categoriaId = $this->input('categoria_id', $this->route('service')->categoria_id);
 
         return [
-            'categoria_id' => ['nullable', 'uuid', Rule::exists('categorias', 'id')],
+            // 'sometimes' (not 'nullable'): categoria_id is NOT NULL. An
+            // explicit null must 422, not pass validated() into a NOT NULL
+            // column (500). Omitting it keeps the current category (no move).
+            'categoria_id' => ['sometimes', 'uuid', Rule::exists('categorias', 'id')],
             'title' => [
                 'required',
                 'string',
