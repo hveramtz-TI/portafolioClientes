@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\RubroController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
@@ -75,6 +76,12 @@ Route::middleware([
         // Admin only routes
         Route::middleware('role:admin')->group(function () {
             Route::get('/users', [UserController::class, 'index']);
+
+            // Base catalog (rubros)
+            Route::get('/rubros/{rubro}/categorias', [RubroController::class, 'categorias']);
+            Route::patch('/rubros/{rubro}/deactivate', [RubroController::class, 'deactivate']);
+            Route::patch('/rubros/{rubro}/reactivate', [RubroController::class, 'reactivate']);
+            Route::apiResource('rubros', RubroController::class)->only(['index', 'store', 'update', 'destroy']);
         });
     });
 });
