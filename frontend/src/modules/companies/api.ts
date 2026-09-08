@@ -1,5 +1,5 @@
 import { apiFetch } from '@/lib/api';
-import type { Company } from './types';
+import type { Company } from '@/types';
 
 export interface GetCompaniesParams {
   search?: string;

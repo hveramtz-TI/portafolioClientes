@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { deleteCompany, getCompany } from '@/modules/companies/api';
-import type { Company } from '@/modules/companies/types';
+import type { Company } from '@/types';
 
 interface DeleteCompanyDialogProps {
   company: Company | null;

@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { deleteClient, updateClientStatus } from '@/modules/clients/api';
-import type { Client } from '@/modules/clients/types';
+import type { Client } from '@/types';
 
 interface DeleteClientDialogProps {
   client: Client | null;

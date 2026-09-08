@@ -1,5 +1,5 @@
 import { apiFetch } from '@/lib/api';
-import type { Client } from './types';
+import type { Client } from '@/types';
 
 export type ClientStatus = 'activo' | 'desactivado' | 'all';
 

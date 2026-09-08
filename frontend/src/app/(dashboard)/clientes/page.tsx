@@ -10,26 +10,18 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { EmptyState } from '@/components/shared/empty-state';
+import { PageHeader } from '@/components/shared/page-header';
+import { TableSkeleton } from '@/components/shared/table-skeleton';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { getClients, updateClientStatus } from '@/modules/clients/api';
 import { ClientForm } from '@/modules/clients/components/client-form';
 import { ClientsTable } from '@/modules/clients/components/clients-table';
 import { DeleteClientDialog } from '@/modules/clients/components/delete-client-dialog';
-import type { Client } from '@/modules/clients/types';
+import type { Client } from '@/types';
 
 type StatusFilter = 'activo' | 'desactivado' | 'all';
-
-function useDebouncedValue<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-
-  return debounced;
-}
 
 export default function ClientesPage() {
   const [status, setStatus] = useState<StatusFilter>('activo');
@@ -76,12 +68,10 @@ export default function ClientesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Clientes</h1>
-        <p className="text-sm text-muted-foreground">
-          Gestión de clientes del portafolio.
-        </p>
-      </div>
+      <PageHeader
+        title="Clientes"
+        description="Gestión de clientes del portafolio."
+      />
 
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -138,15 +128,9 @@ export default function ClientesPage() {
         </div>
 
         {loading ? (
-          <div className="space-y-2">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-          </div>
+          <TableSkeleton />
         ) : clients.length === 0 ? (
-          <div className="rounded-lg border border-dashed py-12 text-center">
-            <p className="text-sm text-muted-foreground">No hay clientes</p>
-          </div>
+          <EmptyState message="No hay clientes" />
         ) : (
           <ClientsTable
             clients={clients}

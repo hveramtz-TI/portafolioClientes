@@ -10,23 +10,15 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/shared/empty-state';
+import { PageHeader } from '@/components/shared/page-header';
+import { TableSkeleton } from '@/components/shared/table-skeleton';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { getCompanies } from '@/modules/companies/api';
 import { CompanyForm } from '@/modules/companies/components/company-form';
 import { CompaniesTable } from '@/modules/companies/components/companies-table';
 import { DeleteCompanyDialog } from '@/modules/companies/components/delete-company-dialog';
-import type { Company } from '@/modules/companies/types';
-
-function useDebouncedValue<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-
-  return debounced;
-}
+import type { Company } from '@/types';
 
 export default function EmpresasPage() {
   const [search, setSearch] = useState('');
@@ -63,12 +55,10 @@ export default function EmpresasPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Empresas</h1>
-        <p className="text-sm text-muted-foreground">
-          Gestión de empresas del portafolio.
-        </p>
-      </div>
+      <PageHeader
+        title="Empresas"
+        description="Gestión de empresas del portafolio."
+      />
 
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -112,15 +102,9 @@ export default function EmpresasPage() {
         </div>
 
         {loading ? (
-          <div className="space-y-2">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-          </div>
+          <TableSkeleton />
         ) : companies.length === 0 ? (
-          <div className="rounded-lg border border-dashed py-12 text-center">
-            <p className="text-sm text-muted-foreground">No hay empresas</p>
-          </div>
+          <EmptyState message="No hay empresas" />
         ) : (
           <CompaniesTable
             companies={companies}

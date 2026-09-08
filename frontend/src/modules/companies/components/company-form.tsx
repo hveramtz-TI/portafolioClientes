@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { createCompany, updateCompany } from '@/modules/companies/api';
-import type { Company } from '@/modules/companies/types';
+import type { Company } from '@/types';
 
 interface CompanyFormProps {
   company?: Company | null;
