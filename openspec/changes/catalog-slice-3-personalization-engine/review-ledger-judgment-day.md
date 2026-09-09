@@ -44,5 +44,7 @@ judges: jd-judge-a, jd-judge-b (blind, parallel, identical scope 12 files + norm
 - Verification: focused classes SQLite 73 passed (64→73, +9); PG `./test-pg.sh --filter='CascadeForkServiceTest|CatalogResolverTest|UserCatalogItemRequestTest'` OK 73/73; full suite `php artisan test` 172 passed / 490 assertions (163→172, zero regressions); `pint --test` PASS on all 7 touched files.
 
 scoped_rejudgment: approved (round-1 re-judgment, both judges findings:[])
-terminal_state: fixes_landed_awaiting_rejudgment
+terminal_state: approved
+independent_final_verification: 172 passed / 490 assertions SQLite AND PostgreSQL at 7b7d38a; routes/api.php diff vs tracker base = 0
+JUDGMENT: APPROVED
 skill_resolution: paths-injected (.opencode/command/verify-laravel.md, spec+design+flows)
