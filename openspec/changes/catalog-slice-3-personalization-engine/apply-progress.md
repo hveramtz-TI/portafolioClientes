@@ -392,3 +392,113 @@ walk terminates on the data itself (null `parent_fork_id`), so no query fires at
   per the flow-doc cascade ("AND de toda la cadena") is implemented and covered by S6.4; orchestrator
   decision grounded in `docs/flujos/rubro-categoria-servicio-lifecycle.md`, spec amended accordingly,
   not new scope.
+
+## Work Unit: 3b-cascade (R7; S7.1, S7.2, S7.3, S7.4)
+
+- **Mode**: Strict TDD (RED → GREEN → REFACTOR)
+- **Engine**: Laravel 13.26.0, PHPUnit 12, SQLite (default) + PostgreSQL (test-pg.sh)
+
+## Completed Tasks (this work unit)
+
+- [x] 7.2 RED: `tests/Feature/CascadeForkServiceTest.php` (9 tests, all S7.x scenarios + identity + not-found)
+- [x] 7.3 GREEN: `app/Services/CascadeForkService.php` — forkRubro/forkCategoria/forkService, one `DB::transaction` each
+- [x] 7.4 REFACTOR: Pint clean
+- [ ] 7.5 VERIFY (orchestrator loop): evidence below, ready for full verification
+
+## TDD Cycle Evidence
+
+| Task | Test File | Layer | Safety Net | RED | GREEN | TRIANGULATE | REFACTOR |
+|------|-----------|-------|------------|-----|-------|-------------|----------|
+| 7.2/7.3/7.4 | `tests/Feature/CascadeForkServiceTest.php` | Feature | 154/154 (full suite, 373 assertions) | ✅ Written (9 failed: class not found) | ✅ Passed | ✅ 9 cases (S7.1–S7.4 + identity ×2 + forkService + not-found ×2) | ✅ Pint clean |
+
+## RED Evidence (first failing run, bounded)
+
+```
+FAILED  Tests\Feature\CascadeForkServiceTest > fork rubro trashed…
+  Error  Class "App\Services\CascadeForkService" not found
+  at tests/Feature/CascadeForkServiceTest.php:36
+
+Tests:    9 failed (0 assertions)
+```
+
+## GREEN Evidence
+
+Focused (SQLite): `docker compose exec backend php artisan test --filter=CascadeForkServiceTest`
+→ **9 passed (94 assertions)**.
+
+Focused (PostgreSQL): `./test-pg.sh --filter=CascadeForkServiceTest`
+→ **OK (9 tests, 94 assertions)**.
+
+Full suite (SQLite): `docker compose exec backend php artisan test`
+→ **163 passed (467 assertions)** (baseline 154/373 → +9 tests, +94 assertions, zero regression).
+
+Pint: `./vendor/bin/pint --test app/Services/CascadeForkService.php tests/Feature/CascadeForkServiceTest.php`
+→ **PASS, 2 files** (2 `single_blank_line_at_eof` fixes applied, re-verified green).
+
+## Work Unit Evidence
+
+| Evidence | Value |
+|---|---|
+| Focused test command + result | `php artisan test --filter=CascadeForkServiceTest` → 9 passed (94 assertions), SQLite + PG |
+| Runtime harness | N/A (unit/feature, no external deps; domain engine only, no routes) |
+| Rollback boundary | Delete `CascadeForkService.php`, `CascadeForkServiceTest.php` |
+| Line counts | `CascadeForkService.php` 193, `CascadeForkServiceTest.php` 356 (total 549; forecast 260–330) |
+
+## Domain Signal Choices (documented)
+
+- **Duplicate fork identity** → `\DomainException` (SPL, no new exception class) with message
+  `"El usuario ya tiene un fork de este {item_type}."` — the simplest idiomatic domain rule signal,
+  checked INSIDE the transaction, non-trashed only (SoftDeletes scope excludes trashed rows, so
+  re-forking after a soft delete is allowed).
+- **Missing / trashed base** → `Illuminate\Database\Eloquent\ModelNotFoundException` via
+  `Model::findOrFail($baseId)` — the idiomatic Eloquent not-found signal; the SoftDeletingScope makes
+  trashed bases miss too. No rows are created in either case.
+
+## sort_order Decision
+
+- Rubro: no ordering column → positional index (0 — single root fork).
+- Categoria: `order` column exists → carried from `$categoria->order`.
+- Service: no ordering column → positional index within its categoria's copied services (collection
+  position). Test asserts the permutation property (each categoria's service forks hold exactly
+  0..n-1 once each) instead of a specific service→index map, because PostgreSQL returns unordered
+  rows without an ORDER BY.
+
+## Documented Assumptions (Slice 4 follow-ups)
+
+1. **Standalone categoria fork has parent_fork_id null** — per the flujo, a categoria may be forked
+   without forking its rubro; the categoria fork is created with no rubro parent. Linking it into a
+   rubro tree happens via Update (parent change) in Slice 4, which will also need to guard against
+   orphaned roots.
+2. **forkService creates the fork with parent_fork_id null** — a standalone service fork has nothing
+   to attach to; attachment (parent_fork_id) happens via Update / parent change in Slice 4.
+
+## Test Methods (9)
+
+`test_s7_1_rubro_cascade_creates_full_tree_with_links`,
+`test_s7_2_mid_copy_failure_rolls_back_everything`,
+`test_s7_3_standalone_categoria_cascade_copies_services`,
+`test_s7_4_deactivated_descendants_copied_and_resolve_desactivado`,
+`test_fork_rubro_twice_for_same_user_is_rejected`,
+`test_fork_against_soft_deleted_prior_fork_is_allowed`,
+`test_fork_service_creates_single_item_with_null_parent`,
+`test_fork_rubro_missing_base_is_not_found`,
+`test_fork_rubro_trashed_base_is_not_found`.
+
+## Deviations
+
+- Test file lives in `tests/Feature/` (not `tests/Unit/` as tasks.md 7.2 originally wrote) — DB-touching
+  tests follow the slice-3a/3b convention (RefreshDatabase, Model::create); tasks.md 7.2 corrected.
+- S7.2 failure hook: a `creating` model-event listener on `UserCatalogItem` that throws on the Nth
+  create (simplest reliable mid-copy hook; `DB::transaction` catches, rolls back, rethrows).
+- Test file is 356 lines vs the 260–330 forecast for the whole 3b slice: the brief mandated every
+  S7.x scenario plus identity and not-found signals as named test methods. Implementation is 193 lines
+  (within the per-unit budget). Recommend `size:exception` for the test file, consistent with the two
+  previous 3b units.
+
+## Risks
+
+- Positional `sort_order` for services is collection-order dependent (services have no ordering
+  column); if Slice 4 adds ordering to services, carry it from the new column instead.
+- Identity is app-level (no DB unique constraint on user+item_type+base_id): the request layer already
+  enforces the same rule, and the service re-checks inside its transaction, but the race window
+  accepted in D-3/D-5 still applies at the application level.

@@ -83,9 +83,9 @@ Chain strategy: feature-branch-chain
 
 ### Unit 3b-cascade (R7; S7.1, S7.2, S7.3, S7.4)
 
-- [ ] 7.2 RED: Write failing tests `backend/tests/Unit/CascadeForkServiceTest.php` covering S7.1 (rubro cascade tree 1+3+6), S7.2 (mid-copy rollback → zero rows), S7.3 (standalone categoria cascade), S7.4 (deactivated descendants copied, own status activo, resolve desactivado via R6)
-- [ ] 7.3 GREEN: Implement `backend/app/Services/CascadeForkService.php` — `forkRubro`, `forkCategoria`, `forkService`; each owns one `DB::transaction`; duplicate identity checked inside; copy non-deleted children regardless of base status; `status='activo'`, empty overrides, correct parent links; propagate exceptions; return tree summary
-- [ ] 7.4 REFACTOR: Clean up; ensure Pint passes
+- [x] 7.2 RED: Write failing tests `backend/tests/Feature/CascadeForkServiceTest.php` (Feature per DB convention, not `tests/Unit/` as originally written) covering S7.1 (rubro cascade tree 1+3+6), S7.2 (mid-copy rollback → zero rows), S7.3 (standalone categoria cascade), S7.4 (deactivated descendants copied, own status activo, resolve desactivado via R6)
+- [x] 7.3 GREEN: Implement `backend/app/Services/CascadeForkService.php` — `forkRubro`, `forkCategoria`, `forkService`; each owns one `DB::transaction`; duplicate identity checked inside; copy non-deleted children regardless of base status; `status='activo'`, empty overrides, correct parent links; propagate exceptions; return tree summary
+- [x] 7.4 REFACTOR: Clean up; ensure Pint passes
 - [ ] 7.5 VERIFY: Run `docker compose exec backend php artisan test --filter=CascadeForkServiceTest` (SQLite) + `./test-pg.sh --filter=CascadeForkServiceTest` (PostgreSQL) + Pint
 - [ ] 7.6 Commit work unit: `feat(catalog): add CascadeForkService with atomic cascade fork (R7)` with tests
 - [ ] 7.7 Settle ledger: `gentle-ai sdd-attempt settle --cwd /home/hgvm/Documentos/GitHub/portafolioClientes --change catalog-slice-3-personalization-engine --request-id 3b-cascade --outcome pass --evidence-revision <commit-sha>`
