@@ -214,3 +214,181 @@ Update: `test_update_owner_is_authorized`, `test_update_non_owner_is_denied`, `t
 - Sibling uniqueness is checked in PHP over the user's personal siblings (small per-user set, KISS);
   if personalization scales past thousands of siblings per user, move the JSON path comparison into the
   query (`overrides->name`) on both engines.
+
+## Work Unit: 3b-resolver (R5, R6; S5.1, S5.2, S5.3, S6.1, S6.2, S6.3)
+
+- **Mode**: Strict TDD (RED → GREEN → REFACTOR)
+- **Engine**: Laravel 13.26.0, PHPUnit 12, SQLite (default) + PostgreSQL (test-pg.sh)
+
+## Completed Tasks (this work unit)
+
+- [x] 6.1 RED: `tests/Feature/CatalogResolverTest.php` (14 tests, all S5.x/S6.x scenarios + N+1 guards)
+- [x] 6.2 GREEN: `app/Services/CatalogResolver.php` — resolve/origin/effectiveStatus per D-4
+- [x] 6.3 REFACTOR: Pint clean
+- [x] 6.4 VERIFY: focused SQLite + PG + full suite + Pint (evidence below)
+- [ ] 6.5 Commit (orchestrator-owned)
+- [ ] 6.6 Settle ledger (orchestrator-owned)
+
+## Follow-up: recursive effective status (S6.4, pre-commit amendment)
+
+- Spec amended by orchestrator: R6 now states the recursive rule and adds S6.4
+  (`specs/user-catalog-personalization/spec.md`), grounded in
+  `docs/flujos/rubro-categoria-servicio-lifecycle.md` ("Rubro base desactivado
+  bloquea el árbol → forks afectados quedan efectivamente ocultos"; "Estado
+  efectivo: propio + base + padres fork"; "AND de toda la cadena").
+- **Change**: `effectiveStatus()` is now recursive — own status ∨ own base
+  status ∨ `effectiveStatus(parentFork)` — so an ancestor fork counts as
+  desactivado through its OWN effective status (its base, its ancestors).
+- **Graph extension**: `loadResolutionGraph()` now also eager-loads each
+  ancestor fork's base (`parentFork.base`, `parentFork.parentFork.base`); the
+  preloaded-collection contract updated to the same list. Recursion adds ZERO
+  queries on a loaded chain (loadMissing is a no-op there) and terminates at a
+  null parent (chains strictly shallower by construction; no memoization needed).
+- Test premise gotcha: `Model::create()` does not pull DB column defaults back
+  into memory — `$fork->status` is null in-memory right after create while the
+  row is 'activo'; premise assertions use `->fresh()->status`.
+
+## TDD Cycle Evidence
+
+| Task | Test File | Layer | Safety Net | RED | GREEN | TRIANGULATE | REFACTOR |
+|------|-----------|-------|------------|-----|-------|-------------|----------|
+| 6.1/6.2/6.3/6.4 | `tests/Feature/CatalogResolverTest.php` | Feature | 140/140 (full suite, 313 assertions) | ✅ Written (12 failed: class not found) | ✅ Passed | ✅ 14 cases (all S5.x/S6.x + origin matrix + N+1) | ✅ Pint clean |
+| S6.4 follow-up | `tests/Feature/CatalogResolverTest.php` | Feature | 152/152 (full suite) | ✅ Written (2 failed: 'desactivado' vs 'activo') | ✅ Passed | ✅ 2 cases (rubro base → depth-3; categoria base mid-chain) | ✅ Pint clean |
+
+## RED Evidence (first failing run, bounded)
+
+```
+Tests:    12 failed (0 assertions)
+FAILED  Tests\Feature\CatalogResolverTest > resolve of fresh item…
+  Error  Class "App\Services\CatalogResolver" not found
+  at tests/Feature/CatalogResolverTest.php:35
+```
+
+## RED Evidence (S6.4 follow-up, flat implementation, bounded)
+
+```
+FAILED  Tests\Feature\CatalogResolverTest > s6 4 deactivated rubro base cascades to deep fork
+  Failed asserting that two strings are identical.
+  -'desactivado'
+  +'activo'
+  at tests/Feature/CatalogResolverTest.php:337
+FAILED  Tests\Feature\CatalogResolverTest > s6 4 deactivated categoria base cascades to service fork
+  Failed asserting that two strings are identical.
+  -'desactivado'
+  +'activo'
+  at tests/Feature/CatalogResolverTest.php:354
+```
+
+## GREEN Evidence
+
+Focused (SQLite): `docker compose exec backend php artisan test --filter=CatalogResolverTest`
+→ **14 passed (60 assertions)**.
+
+Focused (PostgreSQL): `./test-pg.sh --filter=CatalogResolverTest`
+→ **OK (14 tests, 60 assertions)**.
+
+Full suite (SQLite): `docker compose exec backend php artisan test`
+→ **154 passed (373 assertions)** (baseline 140/313 → +14 tests, +60 assertions, zero regression).
+
+Pint: `./vendor/bin/pint --test app/Services/CatalogResolver.php tests/Feature/CatalogResolverTest.php`
+→ **PASS, 2 files** (converged).
+
+## resolve() Sample Output (real dump, test_s5_2_override_wins_and_is_listed)
+
+```json
+{
+    "id": "01a087b8-44f2-73c2-9e28-a534e1b6a1f4",
+    "base_id": "01a087b8-44f1-70c0-8941-ad5283795291",
+    "title": "API",
+    "description": null,
+    "value": 350000,
+    "tags": null,
+    "status": "activo",
+    "origin": "override",
+    "overridden_fields": ["value"]
+}
+```
+
+## Work Unit Evidence
+
+| Evidence | Value |
+|---|---|
+| Focused test command + result | `php artisan test --filter=CatalogResolverTest` → 14 passed (60 assertions), SQLite + PG |
+| Runtime harness | N/A (unit/feature, no external deps; domain engine only, no routes) |
+| Rollback boundary | Delete `CatalogResolver.php`, `CatalogResolverTest.php` |
+| Line counts | `CatalogResolver.php` 143, `CatalogResolverTest.php` 426 (total 569; forecast 260–330) |
+
+## N+1 Guard Decision (design D-4)
+
+Two tests, both via `DB::listen` query counting:
+
+1. `test_resolve_over_preloaded_chain_adds_no_queries` — 5 independent depth-3 trees (service→categoria→rubro
+   fork) fetched once with `with(['base','parentFork.base','parentFork.parentFork.base',
+   'parentFork.parentFork.parentFork'])`, then `resolve()` each item:
+   **0 additional queries**. This is the exact contract D-4 protects: a collection consumer preloads the
+   graph, and the resolver reuses it (`loadMissing` is idempotent) instead of lazy-loading per level (which
+   would be 5×5 = 25 queries). The preload list includes each ancestor fork's base because the recursive
+   effective status (S6.4) reads them; recursion itself adds zero queries on a loaded chain.
+2. `test_resolve_of_fresh_item_has_bounded_eager_queries` — resolver on a NOT preloaded item is
+   self-sufficient: personal item → 0 queries; depth-2 fork → ≤ 3 (base + parent fork + parent base);
+   depth-3 fork → ≤ 5 (+2 for the second fork level and its base); depth-3 ≤ depth-2 + 2
+   (constant eager budget of one query per fork level and per ancestor base).
+
+Rejected alternatives: counting exact per-level queries (brittle to Eloquent internals), and asserting a
+linear bound across collections of N items (per-item eager loading IS linear and acceptable per the brief).
+Verified against vendored `laravel/framework` source: `BelongsTo::getResults()` returns the default (null)
+without querying when the FK is null (BelongsTo.php:119-124); `BelongsTo::getEagerModelKeys()` filters null
+keys and `initRelation()` marks every model's relation loaded (default null), so the ancestor walk never
+triggers lazy loads; `MorphTo::addEagerConstraints()` skips null morph keys (MorphTo.php:117). The chain
+walk terminates on the data itself (null `parent_fork_id`), so no query fires at the top of the chain.
+
+## API Decisions
+
+- **Type→field map**: resolver owns a private `FIELDS` const mirroring
+  `ValidatesUserCatalogItem::displayFields()` (service: title/description/value/tags; rubro/categoria:
+  name/description). Duplication is deliberate — hard constraint forbade editing the requests/trait; noted
+  as a coupling risk for future field additions.
+- **`base_id` guard**: `$item->base_id !== null ? $item->base : null` — never touches the morph relation on
+  personal items (MorphTo eager load skips null keys, so the relation stays unloaded; lazy access on a null
+  morph id returns null without a query, but the guard makes it explicit).
+- **Soft-deleted bases/forks**: relation queries apply the SoftDeletingScope — trashed bases resolve to
+  null and trashed ancestor forks end the chain; no resurrection code needed (a trashed base costs one
+  bounded query per resolve via MorphTo lazy access, never N+1).
+- **Effective status scope — RESOLVED**: `effectiveStatus()` is recursive (own ∨ own base ∨
+  `effectiveStatus(parentFork)`), per the amended R6/S6.4 and the flow-doc cascade rule: a deactivated
+  rubro base cascades to service forks two levels below, and a deactivated base mid-chain (categoria base)
+  deactivates the service forks under its fork. No memoization needed: chains are strictly shallower by
+  construction, recursion terminates at a null parent, and loadMissing keeps it query-free on loaded graphs.
+
+## Test Methods (14)
+
+`test_s5_1_service_fork_reflects_live_base_edit`, `test_s5_2_override_wins_and_is_listed`,
+`test_s5_3_null_override_restores_inheritance`, `test_origin_matches_personal_override_and_base_states`,
+`test_s6_1_deactivated_parent_fork_resolves_desactivado`,
+`test_s6_1_deactivated_grandparent_fork_resolves_desactivado`,
+`test_s6_2_deactivated_service_base_resolves_desactivado`,
+`test_s6_2_deactivated_rubro_base_resolves_desactivado`,
+`test_s6_3_full_active_chain_resolves_activo`, `test_s6_3_personal_item_own_status_decides`,
+`test_s6_4_deactivated_rubro_base_cascades_to_deep_fork`,
+`test_s6_4_deactivated_categoria_base_cascades_to_service_fork`,
+`test_resolve_over_preloaded_chain_adds_no_queries`, `test_resolve_of_fresh_item_has_bounded_eager_queries`.
+
+## Deviations
+
+- Test file lives in `tests/Feature/` (not `tests/Unit/` as tasks.md 6.1 originally wrote) — DB-touching
+  tests follow the slice-3a convention (RefreshDatabase, Model::create); tasks.md 6.1 corrected.
+- Test file is 426 lines vs the 260–330 forecast for the whole 3b slice: the brief mandated every
+  S5.x/S6.x scenario as its own test method plus two query-counting N+1 guards (and the S6.4 follow-up
+  added two more). Implementation is 143 lines (well under). Recommend `size:exception` for the test file.
+
+## Risks
+
+- `FIELDS` const duplicates the trait's `displayFields()`; if display fields ever diverge per type the two
+  lists must change together (both read the same base columns, so drift would surface as a failing test).
+- MorphTo does not mark unmatched (trashed) bases as loaded (`matchToMorphParents` only sets matched
+  models), so a resolve on a fork whose base is soft-deleted issues one extra query per resolve — bounded
+  and documented, never N+1.
+- **RESOLVED (was: effective status did not fold ancestor forks' base statuses)** — the recursive rule
+  per the flow-doc cascade ("AND de toda la cadena") is implemented and covered by S6.4; orchestrator
+  decision grounded in `docs/flujos/rubro-categoria-servicio-lifecycle.md`, spec amended accordingly,
+  not new scope.
