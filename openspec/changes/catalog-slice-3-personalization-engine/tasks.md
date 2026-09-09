@@ -28,8 +28,8 @@ Chain strategy: feature-branch-chain
 
 ## Phase 1: Setup & Slice 3a Branch
 
-- [ ] 1.1 Create branch `feat/catalog-slice-3a` from tracker `feat/catalog-rubros-categorias-servicios`
-- [ ] 1.2 Acquire ledger token: `gentle-ai sdd-attempt acquire --cwd /home/hgvm/Documentos/GitHub/portafolioClientes --change catalog-slice-3-personalization-engine --request-id 3a-relation-policy --work-unit 3a-relation-policy --evidence-goal "R1,R2 policy+relation green on SQLite+PG" --max-attempts 3 --max-changed-lines 350`
+- [x] 1.1 Create branch `feat/catalog-slice-3a` from tracker `feat/catalog-rubros-categorias-servicios`
+- [x] 1.2 Acquire ledger token: `gentle-ai sdd-attempt acquire --cwd /home/hgvm/Documentos/GitHub/portafolioClientes --change catalog-slice-3-personalization-engine --request-id 3a-relation-policy --work-unit 3a-relation-policy --evidence-goal "R1,R2 policy+relation green on SQLite+PG" --max-attempts 3 --max-changed-lines 350`
 
 ## Phase 2: Slice 3a — Relation, Policy, Requests (TDD per unit)
 
@@ -40,31 +40,31 @@ Chain strategy: feature-branch-chain
 - [x] 2.3 GREEN: Implement `backend/app/Providers/AppServiceProvider.php` — register morph map `['rubro' => Rubro::class, 'categoria' => Categoria::class, 'service' => Service::class]` in `boot()`
 - [x] 2.4 GREEN: Implement `backend/app/Policies/UserCatalogItemPolicy.php` — `view`, `update`, `delete` return true only for authenticated owner; admin denied
 - [x] 2.5 REFACTOR: Clean up, ensure Pint passes
-- [ ] 2.6 VERIFY: Run `docker compose exec backend php artisan test --filter=UserCatalogItemPolicyTest,UserCatalogItemRelationTest` (SQLite) + `./test-pg.sh --filter=UserCatalogItemPolicyTest,UserCatalogItemRelationTest` (PostgreSQL) + `docker compose exec backend ./vendor/bin/pint --test`
-- [ ] 2.7 Commit work unit: `feat(catalog): add base() morph relation + owner-only policy (R1,R2)` with tests
-- [ ] 2.8 Settle ledger (orchestrator-owned): native `gentle-ai sdd-attempt settle` with the exact flags returned by this change's dispatcher phaseInstructions — `--token <acquire-token>`, `--outcome passed|failed`, `--evidence-revision <sha256>`, `--diagnosis`, `--harness-disposition`, `--cleanup-evidence`, `--process-evidence`. Never settle with a bare/illustrated command.
+- [x] 2.6 VERIFY: Run `docker compose exec backend php artisan test --filter=UserCatalogItemPolicyTest,UserCatalogItemRelationTest` (SQLite) + `./test-pg.sh --filter=UserCatalogItemPolicyTest,UserCatalogItemRelationTest` (PostgreSQL) + `docker compose exec backend ./vendor/bin/pint --test`
+- [x] 2.7 Commit work unit: `feat(catalog): add base() morph relation + owner-only policy (R1,R2)` with tests
+- [x] 2.8 Settle ledger (orchestrator-owned): native `gentle-ai sdd-attempt settle` with the exact flags returned by this change's dispatcher phaseInstructions — `--token <acquire-token>`, `--outcome passed|failed`, `--evidence-revision <sha256>`, `--diagnosis`, `--harness-disposition`, `--cleanup-evidence`, `--process-evidence`. Never settle with a bare/illustrated command.
 
 ### Unit 3a-requests (R3, R4; S3.1, S3.2, S3.3, S4.1, S4.2)
 
-- [ ] 3.0 Acquire ledger token for this work unit (orchestrator-owned): `gentle-ai sdd-attempt acquire --cwd /home/hgvm/Documentos/GitHub/portafolioClientes --change catalog-slice-3-personalization-engine --request-id 3a-requests --work-unit 3a-requests --evidence-goal "R3,R4 requests green on SQLite+PG" --max-attempts 3 --max-changed-lines 350`; launch only on state `proceed`, retain its opaque `token`.
+- [x] 3.0 Acquire ledger token for this work unit (orchestrator-owned): `gentle-ai sdd-attempt acquire --cwd /home/hgvm/Documentos/GitHub/portafolioClientes --change catalog-slice-3-personalization-engine --request-id 3a-requests --work-unit 3a-requests --evidence-goal "R3,R4 requests green on SQLite+PG" --max-attempts 3 --max-changed-lines 350`; launch only on state `proceed`, retain its opaque `token`.
 - [x] 3.1 RED: Write failing tests `backend/tests/Feature/UserCatalogItemRequestTest.php` covering S3.1 (duplicate fork rejected), S3.2 (sibling title uniqueness), S3.3 (wrong parent type), S4.1 (tags whitelist), S4.2 (status rejected 422, unknown fields dropped)
 - [x] 3.2 GREEN: Implement `backend/app/Http/Requests/StoreUserCatalogItemRequest.php` — `authorize()` authenticates; rules: unique `base_id`+user+`item_type` scoped, title unique per `parent_fork_id` (withoutTrashed), parent type coherence, tags in whitelist, `value >= 0`, `status` forbidden (422), unknown fields rejected
 - [x] 3.3 GREEN: Implement `backend/app/Http/Requests/UpdateUserCatalogItemRequest.php` — `authorize()` calls `can('update', item)`; same validation rules; `sometimes|nullable` for omitted-vs-null; `array_key_exists` removes override on explicit null
 - [x] 3.4 REFACTOR: Extract shared rules trait if duplication > 10 lines; ensure Pint passes
 - [x] 3.5 VERIFY: Run `docker compose exec backend php artisan test --filter=UserCatalogItemRequestTest` (SQLite) + `./test-pg.sh --filter=UserCatalogItemRequestTest` (PostgreSQL) + Pint
-- [ ] 3.6 Commit work unit: `feat(catalog): add Store/Update requests with fork identity & validation (R3,R4)` with tests
-- [ ] 3.7 Settle ledger (orchestrator-owned): native settle for token `3a-requests` with the full exact flag set (see 2.8), before any merge of PR 3a.
+- [x] 3.6 Commit work unit: `feat(catalog): add Store/Update requests with fork identity & validation (R3,R4)` with tests
+- [x] 3.7 Settle ledger (orchestrator-owned): native settle for token `3a-requests` with the full exact flag set (see 2.8), before any merge of PR 3a.
 
 ## Phase 3: Slice 3a PR & Review Gate
 
-- [ ] 4.1 Push `feat/catalog-slice-3a`; open PR targeting tracker `feat/catalog-rubros-categorias-servicios`
-- [ ] 4.2 Verify PR diff ≤ 400 lines; full local verification green on SQLite, PostgreSQL, Pint (this repo has no CI — verification is local, per slice-2 practice).
-- [ ] 4.3 Wait for review approval before proceeding to Slice 3b
+- [x] 4.1 Push `feat/catalog-slice-3a`; open PR targeting tracker `feat/catalog-rubros-categorias-servicios`
+- [x] 4.2 Verify PR diff ≤ 400 lines; full local verification green on SQLite, PostgreSQL, Pint (this repo has no CI — verification is local, per slice-2 practice).
+- [x] 4.3 Wait for review approval before proceeding to Slice 3b
 
 ## Phase 4: Slice 3b Branch & Setup
 
-- [ ] 5.1 Create branch `feat/catalog-slice-3b` from `feat/catalog-slice-3a`
-- [ ] 5.2 Acquire ledger token: `gentle-ai sdd-attempt acquire --cwd /home/hgvm/Documentos/GitHub/portafolioClientes --change catalog-slice-3-personalization-engine --request-id 3b-resolver --work-unit 3b-resolver --evidence-goal "R5,R6 resolver green on SQLite+PG" --max-attempts 3 --max-changed-lines 350`
+- [x] 5.1 Create branch `feat/catalog-slice-3b` from `feat/catalog-slice-3a`
+- [x] 5.2 Acquire ledger token: `gentle-ai sdd-attempt acquire --cwd /home/hgvm/Documentos/GitHub/portafolioClientes --change catalog-slice-3-personalization-engine --request-id 3b-resolver --work-unit 3b-resolver --evidence-goal "R5,R6 resolver green on SQLite+PG" --max-attempts 3 --max-changed-lines 350`
 
 ## Phase 5: Slice 3b — Resolver (TDD)
 
@@ -74,35 +74,35 @@ Chain strategy: feature-branch-chain
 - [x] 6.2 GREEN: Implement `backend/app/Services/CatalogResolver.php` — `resolve()` returns id, base_id, name/title, value, description, tags, effective status, origin, overridden_fields; eager-load `parentFork` and `base` depth 3; per-field inheritance: override ?? current base value; origin logic; effective status AND chain
 - [x] 6.3 REFACTOR: Clean up; ensure Pint passes
 - [x] 6.4 VERIFY: Run `docker compose exec backend php artisan test --filter=CatalogResolverTest` (SQLite) + `./test-pg.sh --filter=CatalogResolverTest` (PostgreSQL) + Pint — 14 passed (60 assertions) both engines, full suite 154 passed (373 assertions), Pint PASS
-- [ ] 6.5 Commit work unit: `feat(catalog): add CatalogResolver with per-field inheritance + effective status (R5,R6)` with tests
-- [ ] 6.6 Settle ledger (orchestrator-owned): native settle for token `3b-resolver` with the full exact flag set (see 2.8).
+- [x] 6.5 Commit work unit: `feat(catalog): add CatalogResolver with per-field inheritance + effective status (R5,R6)` with tests
+- [x] 6.6 Settle ledger (orchestrator-owned): native settle for token `3b-resolver` with the full exact flag set (see 2.8).
 
 ## Phase 6: Slice 3b — Cascade Fork (TDD)
 
-- [ ] 7.1 Acquire ledger token: `gentle-ai sdd-attempt acquire --cwd /home/hgvm/Documentos/GitHub/portafolioClientes --change catalog-slice-3-personalization-engine --request-id 3b-cascade --work-unit 3b-cascade --evidence-goal "R7 cascade fork green on SQLite+PG" --max-attempts 3 --max-changed-lines 350`
+- [x] 7.1 Acquire ledger token: `gentle-ai sdd-attempt acquire --cwd /home/hgvm/Documentos/GitHub/portafolioClientes --change catalog-slice-3-personalization-engine --request-id 3b-cascade --work-unit 3b-cascade --evidence-goal "R7 cascade fork green on SQLite+PG" --max-attempts 3 --max-changed-lines 350`
 
 ### Unit 3b-cascade (R7; S7.1, S7.2, S7.3, S7.4)
 
 - [x] 7.2 RED: Write failing tests `backend/tests/Feature/CascadeForkServiceTest.php` (Feature per DB convention, not `tests/Unit/` as originally written) covering S7.1 (rubro cascade tree 1+3+6), S7.2 (mid-copy rollback → zero rows), S7.3 (standalone categoria cascade), S7.4 (deactivated descendants copied, own status activo, resolve desactivado via R6)
 - [x] 7.3 GREEN: Implement `backend/app/Services/CascadeForkService.php` — `forkRubro`, `forkCategoria`, `forkService`; each owns one `DB::transaction`; duplicate identity checked inside; copy non-deleted children regardless of base status; `status='activo'`, empty overrides, correct parent links; propagate exceptions; return tree summary
 - [x] 7.4 REFACTOR: Clean up; ensure Pint passes
-- [ ] 7.5 VERIFY: Run `docker compose exec backend php artisan test --filter=CascadeForkServiceTest` (SQLite) + `./test-pg.sh --filter=CascadeForkServiceTest` (PostgreSQL) + Pint
-- [ ] 7.6 Commit work unit: `feat(catalog): add CascadeForkService with atomic cascade fork (R7)` with tests
-- [ ] 7.7 Settle ledger: `gentle-ai sdd-attempt settle --cwd /home/hgvm/Documentos/GitHub/portafolioClientes --change catalog-slice-3-personalization-engine --request-id 3b-cascade --outcome pass --evidence-revision <commit-sha>`
+- [x] 7.5 VERIFY: Run `docker compose exec backend php artisan test --filter=CascadeForkServiceTest` (SQLite) + `./test-pg.sh --filter=CascadeForkServiceTest` (PostgreSQL) + Pint
+- [x] 7.6 Commit work unit: `feat(catalog): add CascadeForkService with atomic cascade fork (R7)` with tests
+- [x] 7.7 Settle ledger: `gentle-ai sdd-attempt settle --cwd /home/hgvm/Documentos/GitHub/portafolioClientes --change catalog-slice-3-personalization-engine --request-id 3b-cascade --outcome pass --evidence-revision <commit-sha>`
 
 ## Phase 7: Slice 3b PR & Review Gate
 
-- [ ] 8.1 Push `feat/catalog-slice-3b`; open PR targeting `feat/catalog-slice-3a`
-- [ ] 8.2 Verify PR diff ≤ 400 lines; full local verification green on SQLite, PostgreSQL, Pint (no CI — local verification only).
+- [x] 8.1 Push `feat/catalog-slice-3b`; open PR targeting `feat/catalog-slice-3a`
+- [x] 8.2 Verify PR diff ≤ 400 lines; full local verification green on SQLite, PostgreSQL, Pint (no CI — local verification only).
 
 ## Phase 8: Integration Verification & Close-Out
 
-- [ ] 9.1 Run full test suite both engines: `docker compose exec backend php artisan test` + `./test-pg.sh`
-- [ ] 9.2 Verify `backend/routes/api.php` unchanged (assert no diff)
-- [ ] 9.3 Run `codegraph sync` (via `.opencode/command/sync-codegraph`)
-- [ ] 9.4 Update `docs/planning/planning3.md` progress log (mark Slice 3 complete)
+- [x] 9.1 Run full test suite both engines: `docker compose exec backend php artisan test` + `./test-pg.sh`
+- [x] 9.2 Verify `backend/routes/api.php` unchanged (assert no diff)
+- [x] 9.3 Run `codegraph sync` (via `.opencode/command/sync-codegraph`)
+- [x] 9.4 Update `docs/planning/planning3.md` progress log (mark Slice 3 complete)
 - [ ] 9.5 Note: Notion mirror of planning3.md is a user-visible follow-up within slice completion (not a blocker)
 
 ## Phase 9: Tracker Integration (Slice 4+ scope, noted for context)
 
-- [ ] 10.1 Tracker branch `feat/catalog-rubros-categorias-servicios` will merge to main in Slice 4+; out of this change's tasks
+- [x] 10.1 *(no-op para este change: el tracker ya se integró a main vía PR #14 con el Slice 3)* Tracker branch `feat/catalog-rubros-categorias-servicios` will merge to main in Slice 4+; out of this change's tasks

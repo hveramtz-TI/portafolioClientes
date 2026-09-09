@@ -1,7 +1,7 @@
 # Planning — Rubros, Categorías y Servicios
 
 **Fecha:** 2026-08-28
-**Estado:** 🔵 **En progreso (retomado 2026-09-08)** — Slices 1 y 2 (de 7) integrados y verificados; el detalle en *Registro de progreso* al final. Pendientes: Slices 3-7 (fork resolver/cascade, API de forks, seeders, frontend).
+**Estado:** 🔵 **En progreso (actualizado 2026-09-09)** — Slices 1–3 (de 7) integrados y verificados; el detalle en *Registro de progreso* al final. Pendientes: Slices 4–7 (API de forks sobre el motor ya existente, seeders, frontend).
 **Objetivo:** Implementar el catálogo personalizable de rubros, categorías y servicios sobre el modelo híbrido (catálogo base global + fork personal por usuario), incluyendo CRUD, lifecycle (desactivar/eliminar/reactivar), seeders del catálogo base y personalización sin alterar la base ni afectar a otros usuarios.
 
 ## Contexto
@@ -9,7 +9,7 @@
 - Stack: Next.js 16 (App Router) · React 19 · Tailwind CSS 4 · TypeScript · Laravel 13 · PostgreSQL 16 · Redis 7 · MinIO. Componentes UI con **shadcn/ui**.
 - **planning1 (Auth + Roles):** implementado. Sanctum cookie-based (SPA), roles `admin`/`user`, UUIDv7 PK en `users`, middleware `EnsureRole`, login + seeder admin (sin registro público).
 - **planning2 (Clientes y empresas):** implementado. Modelos `Client` y `Company`, RUT único condicional, estados Activo/Desactivado, seeders ordenados (`CompanySeeder` antes de `ClientSeeder`), shadcn/ui en formularios.
-- **Estado actual del catálogo:** Slices 1 y 2 implementados y verificados: existen las migraciones, modelos y API base administrativa de `Rubro`/`Categoria`/`Service` bajo `auth:sanctum` + `role:admin`. El modelo de forks, seeders y frontend siguen pendientes en Slices 3-7; el perfil público y las órdenes de trabajo (que consumen este catálogo) son épicas posteriores.
+- **Estado actual del catálogo:** Slices 1–3 implementados y verificados: migraciones, modelos y API base administrativa de `Rubro`/`Categoria`/`Service` bajo `auth:sanctum` + `role:admin`, **más el motor de personalización (Slice 3)**: política de ownership, requests de validación de forks, `CatalogResolver` (herencia + estado efectivo recursivo) y `CascadeForkService` — todo dominio, sin endpoints aún (API de forks = Slice 4). Seeders y frontend pendientes en Slices 5–7; el perfil público y las órdenes de trabajo (que consumen este catálogo) son épicas posteriores.
 - Jerarquía: `Rubro → Categoría → Servicio`. Categorías y servicios en **lenguaje natural** orientado al cliente; términos técnicos (`frontend`, `backend`, `fullstack`, etc.) solo como **etiquetas internas opcionales**.
 - Reglas de proyecto: KISS, YAGNI, feature-first, Clean Architecture, UUID como PK, Docker-first, migraciones como fuente de verdad del esquema.
 
@@ -131,7 +131,9 @@ Se retomó el sprint pospuesto. Estado del chain de 7 slices:
 | 2a | API base **rubros** (admin) | #8 | ✅ Merged al tracker |
 | 2b | API base **categorías** (admin) | #9 | ✅ Merged al tracker |
 | 2c | API base **servicios** (admin) + move + tags | #10 | ✅ Merged al tracker |
-| 3-7 | Fork resolver/cascade, API de forks, seeders, frontend | — | ⬜ Pendiente |
+| 3a | Motor: `base()` morph + `UserCatalogItemPolicy` + Store/Update requests (R1–R4) | #12 | ✅ Merged al tracker |
+| 3b | Motor: `CatalogResolver` + `CascadeForkService` (R5–R7) | #13 | ✅ Merged al tracker |
+| 4-7 | API HTTP de forks, seeders, frontend | — | ⬜ Pendiente |
 
 **Integración a `main`:** merge tracker→main en `4922634` (PR #11). El tracker quedó sincronizado con `main` para que el Slice 3 nazca con todo.
 
@@ -148,3 +150,20 @@ Se retomó el sprint pospuesto. Estado del chain de 7 slices:
 **HUs afectadas:** **sin cambio de estado** — el backend de la API base está implementado y verificado, pero las HUs HU-013–HU-025 describen la funcionalidad de usuario **end-to-end** (requiere el modelo de fork — Slice 3 — y el frontend — Slices 5-7). Marcarlas *Implementada* ahora sería prematuro y falso; el catálogo aún no es operable por un usuario normal. Se actualizarán al cerrar el epic.
 
 **Pendiente administrativo:** cerrar el token `sdd-attempt` de remediación (el ledger lo dejó `blocked` porque los merges de PR ocurrieron con el intento abierto; requiere un `reset` explícito de maintainer, que es decisión deliberada y no automática).
+
+### 2026-09-09 — Slice 3 (motor de personalización) integrado en `main`
+
+**Entregado** (dominio puro, sin superficie HTTP; SDD change `catalog-slice-3-personalization-engine` con proposal/spec/design/tasks/apply-progress/review-ledger bajo `openspec/`):
+
+- **3a** (`#12`): `base(): MorphTo` con morph map (`rubro/categoria/service`) no-enforcing, `UserCatalogItemPolicy` owner-only (admin explícitamente denegado en forks ajenos), `Store/UpdateUserCatalogItemRequest` con identidad de fork, unicidad entre hermanos, coherencia+ownership de `parent_fork_id`, whitelist de tags, `#[FailOnUnknownFields]` (status/campos desconocidos → 422, nunca descarte silencioso) y `mergedOverrides()` (null explícito elimina el override / omitido no toca).
+- **3b** (`#13`): `CatalogResolver` con herencia dinámica por campo, origen `personal|override|base` y **estado efectivo recursivo**; `CascadeForkService` con fork atómico en cascada (copia **todos** los descendientes no-borrados independientemente del status de la base, `status='activo'` propio, overrides vacíos, rollback total probado).
+- **Enmienda de spec S6.4:** el flujo de lifecycle ("AND de toda la cadena"; "base desactivado bloquea el árbol") zanjó que R6 es recursivo — el resolver plano dejaba visible un servicio bajo rubro-base desactivada; corregido con test RED→GREEN.
+
+**Review adversarial (Judgment Day, jueces ciegos A+B):** 3 hallazgos confirmados con evidencia RED propia antes del merge — J1 duplicados de fork por descendientes sin chequeo de identidad en la cascada, J2 resolver resolvía `activo` con base/padre no resolubles (fail-safe a `desactivado`), J3 `base_id` sin exists+coherencia de tipo. Fixes + re-judgment: **APPROVED por ambos jueces**. J4 (parent null explícito en rubro → 422) queda como follow-up de contrato de entrada para Slice 4.
+
+**Verificación:** suite completa **172 tests / 490 aserciones green en SQLite y PostgreSQL** sobre `main` fusionada (095fd5b); `routes/api.php` con 0 diff (fuera de alcance respetado); pint convergido; ledger de runtime attempts con los 5 work units cerrados (2 resets `size:exception` autorizados por maintainer, settles siempre antes de merges).
+
+**HUs afectadas:** **sin cambio de estado** — el motor está implementado y verificado, pero HU-013–HU-025 siguen necesitando la API HTTP (Slice 4) y el frontend (Slices 5–7) para ser operables end-to-end.
+
+**Deuda documentada para Slice 4:** forks standalone de categoría/servicio nacen con `parent_fork_id = null` (el adjunte vía Update debe proteger raíces huérfanas); decisión de serialización de `parent_fork_id: null` en rubros (J4); race de unicidad app-level aceptado (D5).
+
