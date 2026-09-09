@@ -101,7 +101,7 @@ Chain strategy: feature-branch-chain
 - [x] 9.2 Verify `backend/routes/api.php` unchanged (assert no diff)
 - [x] 9.3 Run `codegraph sync` (via `.opencode/command/sync-codegraph`)
 - [x] 9.4 Update `docs/planning/planning3.md` progress log (mark Slice 3 complete)
-- [ ] 9.5 Note: Notion mirror of planning3.md is a user-visible follow-up within slice completion (not a blocker)
+- [x] 9.5 Notion mirror of planning3.md updated (Planning page, 4 sections synced: Estado, Contexto, tabla slices 3a/3b, seccion 2026-09-09) — verified via update acceptance + page timestamp 2026-09-09
 
 ## Phase 9: Tracker Integration (Slice 4+ scope, noted for context)
 
