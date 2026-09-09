@@ -35,11 +35,11 @@ Chain strategy: feature-branch-chain
 
 ### Unit 3a-relation-policy (R1, R2; S1.1, S1.2, S2.1, S2.2)
 
-- [ ] 2.1 RED: Write failing tests `backend/tests/Feature/UserCatalogItemPolicyTest.php` covering S1.1 (owner allowed), S1.2 (other/admin denied); `backend/tests/Unit/UserCatalogItemRelationTest.php` covering S2.1 (fork resolves base), S2.2 (personal null base)
-- [ ] 2.2 GREEN: Implement `backend/app/Models/UserCatalogItem.php` — add `base()` morphTo with custom columns `item_type`, `base_id`
-- [ ] 2.3 GREEN: Implement `backend/app/Providers/AppServiceProvider.php` — register morph map `['rubro' => Rubro::class, 'categoria' => Categoria::class, 'service' => Service::class]` in `boot()`
-- [ ] 2.4 GREEN: Implement `backend/app/Policies/UserCatalogItemPolicy.php` — `view`, `update`, `delete` return true only for authenticated owner; admin denied
-- [ ] 2.5 REFACTOR: Clean up, ensure Pint passes
+- [x] 2.1 RED: Write failing tests `backend/tests/Feature/UserCatalogItemPolicyTest.php` covering S1.1 (owner allowed), S1.2 (other/admin denied); `backend/tests/Feature/UserCatalogItemRelationTest.php` covering S2.1 (fork resolves base), S2.2 (personal null base)
+- [x] 2.2 GREEN: Implement `backend/app/Models/UserCatalogItem.php` — add `base()` morphTo with custom columns `item_type`, `base_id`
+- [x] 2.3 GREEN: Implement `backend/app/Providers/AppServiceProvider.php` — register morph map `['rubro' => Rubro::class, 'categoria' => Categoria::class, 'service' => Service::class]` in `boot()`
+- [x] 2.4 GREEN: Implement `backend/app/Policies/UserCatalogItemPolicy.php` — `view`, `update`, `delete` return true only for authenticated owner; admin denied
+- [x] 2.5 REFACTOR: Clean up, ensure Pint passes
 - [ ] 2.6 VERIFY: Run `docker compose exec backend php artisan test --filter=UserCatalogItemPolicyTest,UserCatalogItemRelationTest` (SQLite) + `./test-pg.sh --filter=UserCatalogItemPolicyTest,UserCatalogItemRelationTest` (PostgreSQL) + `docker compose exec backend ./vendor/bin/pint --test`
 - [ ] 2.7 Commit work unit: `feat(catalog): add base() morph relation + owner-only policy (R1,R2)` with tests
 - [ ] 2.8 Settle ledger (orchestrator-owned): native `gentle-ai sdd-attempt settle` with the exact flags returned by this change's dispatcher phaseInstructions — `--token <acquire-token>`, `--outcome passed|failed`, `--evidence-revision <sha256>`, `--diagnosis`, `--harness-disposition`, `--cleanup-evidence`, `--process-evidence`. Never settle with a bare/illustrated command.
@@ -47,11 +47,11 @@ Chain strategy: feature-branch-chain
 ### Unit 3a-requests (R3, R4; S3.1, S3.2, S3.3, S4.1, S4.2)
 
 - [ ] 3.0 Acquire ledger token for this work unit (orchestrator-owned): `gentle-ai sdd-attempt acquire --cwd /home/hgvm/Documentos/GitHub/portafolioClientes --change catalog-slice-3-personalization-engine --request-id 3a-requests --work-unit 3a-requests --evidence-goal "R3,R4 requests green on SQLite+PG" --max-attempts 3 --max-changed-lines 350`; launch only on state `proceed`, retain its opaque `token`.
-- [ ] 3.1 RED: Write failing tests `backend/tests/Feature/UserCatalogItemRequestTest.php` covering S3.1 (duplicate fork rejected), S3.2 (sibling title uniqueness), S3.3 (wrong parent type), S4.1 (tags whitelist), S4.2 (status rejected 422, unknown fields dropped)
-- [ ] 3.2 GREEN: Implement `backend/app/Http/Requests/StoreUserCatalogItemRequest.php` — `authorize()` authenticates; rules: unique `base_id`+user+`item_type` scoped, title unique per `parent_fork_id` (withoutTrashed), parent type coherence, tags in whitelist, `value >= 0`, `status` forbidden (422), unknown fields rejected
-- [ ] 3.3 GREEN: Implement `backend/app/Http/Requests/UpdateUserCatalogItemRequest.php` — `authorize()` calls `can('update', item)`; same validation rules; `sometimes|nullable` for omitted-vs-null; `array_key_exists` removes override on explicit null
-- [ ] 3.4 REFACTOR: Extract shared rules trait if duplication > 10 lines; ensure Pint passes
-- [ ] 3.5 VERIFY: Run `docker compose exec backend php artisan test --filter=UserCatalogItemRequestTest` (SQLite) + `./test-pg.sh --filter=UserCatalogItemRequestTest` (PostgreSQL) + Pint
+- [x] 3.1 RED: Write failing tests `backend/tests/Feature/UserCatalogItemRequestTest.php` covering S3.1 (duplicate fork rejected), S3.2 (sibling title uniqueness), S3.3 (wrong parent type), S4.1 (tags whitelist), S4.2 (status rejected 422, unknown fields dropped)
+- [x] 3.2 GREEN: Implement `backend/app/Http/Requests/StoreUserCatalogItemRequest.php` — `authorize()` authenticates; rules: unique `base_id`+user+`item_type` scoped, title unique per `parent_fork_id` (withoutTrashed), parent type coherence, tags in whitelist, `value >= 0`, `status` forbidden (422), unknown fields rejected
+- [x] 3.3 GREEN: Implement `backend/app/Http/Requests/UpdateUserCatalogItemRequest.php` — `authorize()` calls `can('update', item)`; same validation rules; `sometimes|nullable` for omitted-vs-null; `array_key_exists` removes override on explicit null
+- [x] 3.4 REFACTOR: Extract shared rules trait if duplication > 10 lines; ensure Pint passes
+- [x] 3.5 VERIFY: Run `docker compose exec backend php artisan test --filter=UserCatalogItemRequestTest` (SQLite) + `./test-pg.sh --filter=UserCatalogItemRequestTest` (PostgreSQL) + Pint
 - [ ] 3.6 Commit work unit: `feat(catalog): add Store/Update requests with fork identity & validation (R3,R4)` with tests
 - [ ] 3.7 Settle ledger (orchestrator-owned): native settle for token `3a-requests` with the full exact flag set (see 2.8), before any merge of PR 3a.
 

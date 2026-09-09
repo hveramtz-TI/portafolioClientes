@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserCatalogItem extends Model
@@ -53,5 +54,10 @@ class UserCatalogItem extends Model
     public function children(): HasMany
     {
         return $this->hasMany(self::class, 'parent_fork_id');
+    }
+
+    public function base(): MorphTo
+    {
+        return $this->morphTo(__FUNCTION__, 'item_type', 'base_id');
     }
 }
