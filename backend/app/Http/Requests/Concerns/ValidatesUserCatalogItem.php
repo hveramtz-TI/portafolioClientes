@@ -5,6 +5,7 @@ namespace App\Http\Requests\Concerns;
 use App\Models\UserCatalogItem;
 use Closure;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Exists;
 use Illuminate\Validation\Rules\Unique;
 
 /**
@@ -97,6 +98,7 @@ trait ValidatesUserCatalogItem
         return [
             'item_type.in' => 'The item type must be one of: rubro, categoria, service.',
             'base_id.unique' => 'You already have a fork of this item for the selected type.',
+            'base_id.exists' => 'The selected base item does not exist in the catalog for the selected item type.',
             'parent_fork_id.required' => 'A personal categoria/service item must belong to a fork tree (parent_fork_id).',
             'status' => 'The status field is not writable; status changes go through dedicated endpoints.',
             'prohibited' => 'The :attribute field is not allowed.',
@@ -117,6 +119,25 @@ trait ValidatesUserCatalogItem
                 ->where('item_type', $type)
                 ->whereNull('deleted_at')
         );
+    }
+
+    /**
+     * R2 base reference: a non-null base_id MUST point at a live row of the
+     * base table mapped by item_type (rubro→rubros, categoria→categorias,
+     * service→services). Checking the type-mapped table enforces existence
+     * AND type coherence in one rule, blocking R2-orphan rows at the door;
+     * trashed bases are excluded, matching the fork engines' findOrFail/
+     * default-scope behaviour. Only built for a validated item_type.
+     */
+    protected function baseExistsRule(string $type): Exists
+    {
+        $table = match ($type) {
+            'rubro' => 'rubros',
+            'categoria' => 'categorias',
+            'service' => 'services',
+        };
+
+        return Rule::exists($table, 'id')->whereNull('deleted_at');
     }
 
     /**

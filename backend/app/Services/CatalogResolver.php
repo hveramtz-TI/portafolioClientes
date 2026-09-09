@@ -102,6 +102,14 @@ class CatalogResolver
      * ancestors, so a deactivated rubro base cascades to service forks two
      * levels below. The recursion terminates at a null parent (the data ends
      * the chain) and never triggers lazy loads on a preloaded graph.
+     *
+     * Fail-safe (S6.4 full-chain AND): an unresolvable link is NOT provably
+     * active. A non-null base_id whose base() resolves null (base trashed or
+     * missing) and a non-null parent_fork_id whose parent fork resolves null
+     * (ancestor deleted) both return 'desactivado'. No extra queries: both
+     * relations are already loaded by loadResolutionGraph (and by the D-4
+     * preload contract), and Eloquent caches the null resolution, so a loaded
+     * graph still resolves in zero queries (withTrashed() is never needed).
      */
     public function effectiveStatus(UserCatalogItem $item): string
     {
@@ -111,7 +119,15 @@ class CatalogResolver
             return 'desactivado';
         }
 
+        if ($item->base_id !== null && $item->base === null) {
+            return 'desactivado';
+        }
+
         if ($item->base_id !== null && $item->base?->status === 'desactivado') {
+            return 'desactivado';
+        }
+
+        if ($item->parent_fork_id !== null && $item->parentFork === null) {
             return 'desactivado';
         }
 

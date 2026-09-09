@@ -46,8 +46,15 @@ class StoreUserCatalogItemRequest extends FormRequest
             'parent_fork_id' => ['nullable', 'uuid'],
         ];
 
-        if ($isFork && $userId !== null && $type !== '') {
-            $rules['base_id'][] = $this->forkIdentityUniqueRule($type, $userId);
+        if ($isFork && in_array($type, self::ITEM_TYPES, true)) {
+            // R2 referential integrity first: the base row must exist live in
+            // the table mapped by the (validated) item_type — a wrong-type or
+            // bogus UUID never reaches the identity check as a valid fork.
+            $rules['base_id'][] = $this->baseExistsRule($type);
+
+            if ($userId !== null) {
+                $rules['base_id'][] = $this->forkIdentityUniqueRule($type, $userId);
+            }
         }
 
         $this->addParentRules($rules, $type, $userId, $isFork);

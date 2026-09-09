@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /**
@@ -353,6 +354,67 @@ class CatalogResolverTest extends TestCase
         // categoria fork's own status is activo — only its BASE is not.
         $this->assertSame('desactivado', $this->resolver->effectiveStatus($serviceFork));
         $this->assertSame('desactivado', $this->resolver->resolve($serviceFork)['status']);
+    }
+
+    // --- R6/S6 fail-safe: unresolvable base / ancestor (J2) -----------------
+
+    /**
+     * 'activo' is only provable when the WHOLE chain resolves active (S6.4
+     * full-chain AND). A fork whose non-null base_id points at no live base
+     * row (soft-deleted or missing) can never prove that: it must resolve
+     * 'desactivado', with inherited fields resolving null (J2).
+     */
+    public function test_fork_with_missing_base_resolves_desactivado(): void
+    {
+        $user = User::factory()->create();
+
+        // base_id is a well-formed UUID with no row behind it.
+        $fork = UserCatalogItem::create([
+            'user_id' => $user->id,
+            'item_type' => 'service',
+            'base_id' => (string) Str::uuid(),
+            'overrides' => ['title' => 'Mío'],
+        ]);
+
+        $this->assertSame('desactivado', $this->resolver->effectiveStatus($fork));
+
+        $resolved = $this->resolver->resolve($fork);
+        $this->assertSame('desactivado', $resolved['status']);
+        // Overrides still resolve; base-inherited fields are null.
+        $this->assertSame('Mío', $resolved['title']);
+        $this->assertNull($resolved['value']);
+        $this->assertNull($resolved['description']);
+    }
+
+    public function test_fork_with_soft_deleted_base_resolves_desactivado(): void
+    {
+        $user = User::factory()->create();
+        [, , $service] = $this->makeCatalog();
+        $fork = $this->serviceFork($user, $service);
+        $service->delete(); // trashed: base() no longer resolves
+
+        $this->assertSame('desactivado', $this->resolver->effectiveStatus($fork));
+        $this->assertSame('desactivado', $this->resolver->resolve($fork)['status']);
+    }
+
+    /**
+     * Same fail-safe one level up: a non-null parent_fork_id whose fork chain
+     * no longer resolves (ancestor deleted) is not provably active either.
+     */
+    public function test_child_of_deleted_parent_fork_resolves_desactivado(): void
+    {
+        $user = User::factory()->create();
+        [$rubro, $categoria, $service] = $this->makeCatalog();
+        $rubroFork = $this->rubroFork($user, $rubro);
+        $categoriaFork = $this->categoriaFork($user, $categoria, $rubroFork);
+        $serviceFork = $this->serviceFork($user, $service, $categoriaFork);
+        $categoriaFork->delete(); // child keeps a dangling parent_fork_id
+
+        // Recursive AND: both the direct child and, through it, the grandchild
+        // fail safe to desactivado while their own status stays 'activo'.
+        $this->assertSame('desactivado', $this->resolver->effectiveStatus($serviceFork));
+        $this->assertSame('desactivado', $this->resolver->resolve($serviceFork)['status']);
+        $this->assertSame('activo', $serviceFork->fresh()->status);
     }
 
     // --- D-4 N+1 guard --------------------------------------------------------

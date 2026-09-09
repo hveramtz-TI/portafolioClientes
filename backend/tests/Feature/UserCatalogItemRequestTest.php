@@ -14,6 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Routing\Route;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -194,6 +195,51 @@ class UserCatalogItemRequestTest extends TestCase
 
         $this->assertSame($service->id, $validated['base_id']);
     }
+
+    // --- R2 base_id referential integrity (J3) ------------------------------
+
+    /**
+     * A well-formed but non-existent base_id is an R2 orphan waiting to
+     * happen: the fork must point at a LIVE row of the base table mapped by
+     * item_type (rubro→rubros, categoria→categorias, service→services).
+     */
+    public function test_store_base_id_that_does_not_exist_is_rejected(): void
+    {
+        $user = User::factory()->create();
+
+        $this->assertRequestFails(StoreUserCatalogItemRequest::class, [
+            'item_type' => 'service',
+            'base_id' => (string) Str::uuid(),
+        ], $user, 'base_id');
+    }
+
+    public function test_store_base_id_of_the_wrong_base_type_is_rejected(): void
+    {
+        $user = User::factory()->create();
+        [$rubro] = $this->makeCatalog();
+
+        // A real rubro id under item_type=service must be checked against the
+        // services table, where it does not exist.
+        $this->assertRequestFails(StoreUserCatalogItemRequest::class, [
+            'item_type' => 'service',
+            'base_id' => $rubro->id,
+        ], $user, 'base_id');
+    }
+
+    public function test_store_base_id_of_trashed_base_is_rejected(): void
+    {
+        $user = User::factory()->create();
+        [, , $service] = $this->makeCatalog();
+        $service->delete();
+
+        $this->assertRequestFails(StoreUserCatalogItemRequest::class, [
+            'item_type' => 'service',
+            'base_id' => $service->id,
+        ], $user, 'base_id');
+    }
+
+    // The positive case — a real, live, type-coherent service base_id passes —
+    // is guarded by test_store_valid_service_fork_passes above.
 
     // --- R3/S3.2: sibling visible-name uniqueness (personal items) --------
 

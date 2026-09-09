@@ -281,11 +281,10 @@ class CascadeForkServiceTest extends TestCase
         $first = $this->service->forkRubro($rubro->id, $user);
 
         // User deletes their fork tree (soft delete); identity must not block
-        // re-forking the same base (non-trashed only).
-        UserCatalogItem::where('user_id', $user->id)
-            ->where('item_type', 'rubro')
-            ->where('base_id', $rubro->id)
-            ->delete();
+        // re-forking the same base (non-trashed only). The WHOLE tree must go:
+        // leaving non-trashed descendants would make the cascade a duplicate
+        // (R3/S3.1 applies to every copied row — see the descendant tests).
+        UserCatalogItem::where('user_id', $user->id)->delete();
 
         $second = $this->service->forkRubro($rubro->id, $user);
 
@@ -298,6 +297,83 @@ class CascadeForkServiceTest extends TestCase
                 ->count()
         );
         $this->assertSame(20, UserCatalogItem::withTrashed()->where('user_id', $user->id)->count());
+    }
+
+    // --- R3 identity guard for CASCADE DESCENDANTS (J1) ---------------------
+
+    /**
+     * A cascade must not copy a descendant the user already forked standalone
+     * (R3/S3.1 applies to EVERY row written, not just the top-level one):
+     * the whole transaction must abort with the same DomainException signal
+     * and leave zero new rows (S7.2-style rollback).
+     */
+    public function test_fork_rubro_rejected_when_descendant_categoria_already_forked_standalone(): void
+    {
+        $user = User::factory()->create();
+        $rubro = Rubro::create(['name' => 'Informática']);
+        $categoria = Categoria::create(['rubro_id' => $rubro->id, 'name' => 'Web']);
+        Service::create(['categoria_id' => $categoria->id, 'title' => 'API', 'value' => 100]);
+
+        // Standalone categoria fork: 1 categoria + 1 service rows.
+        $this->service->forkCategoria($categoria->id, $user);
+        $this->assertDatabaseCount('user_catalog_items', 2);
+
+        try {
+            // Cascading the parent rubro would copy the same categoria again.
+            $this->service->forkRubro($rubro->id, $user);
+            $this->fail('Duplicate descendant fork should be rejected.');
+        } catch (DomainException) {
+            // Same domain signal as a top-level duplicate.
+        }
+
+        // Full rollback: only the 2 standalone rows persist.
+        $this->assertDatabaseCount('user_catalog_items', 2);
+        $this->assertSame(0, UserCatalogItem::where('item_type', 'rubro')->count());
+    }
+
+    public function test_fork_rubro_rejected_when_descendant_service_already_forked_standalone(): void
+    {
+        $user = User::factory()->create();
+        $rubro = Rubro::create(['name' => 'Informática']);
+        $categoria = Categoria::create(['rubro_id' => $rubro->id, 'name' => 'Web']);
+        $service = Service::create(['categoria_id' => $categoria->id, 'title' => 'API', 'value' => 100]);
+
+        // Standalone service fork: 1 row; no categoria fork exists.
+        $this->service->forkService($service->id, $user);
+        $this->assertDatabaseCount('user_catalog_items', 1);
+
+        try {
+            $this->service->forkRubro($rubro->id, $user);
+            $this->fail('Duplicate descendant service fork should be rejected.');
+        } catch (DomainException) {
+            // Identity violation is a domain signal.
+        }
+
+        // Rubro + categoria forks created before the clash are rolled back too.
+        $this->assertDatabaseCount('user_catalog_items', 1);
+    }
+
+    public function test_fork_categoria_rejected_when_descendant_service_already_forked_standalone(): void
+    {
+        $user = User::factory()->create();
+        $rubro = Rubro::create(['name' => 'Informática']);
+        $categoria = Categoria::create(['rubro_id' => $rubro->id, 'name' => 'Web']);
+        $service = Service::create(['categoria_id' => $categoria->id, 'title' => 'API', 'value' => 100]);
+
+        // Standalone service fork: 1 row; the categoria itself is NOT forked.
+        $this->service->forkService($service->id, $user);
+        $this->assertDatabaseCount('user_catalog_items', 1);
+
+        try {
+            // Top-level categoria identity passes; the service descendant clashes.
+            $this->service->forkCategoria($categoria->id, $user);
+            $this->fail('Duplicate descendant service fork should be rejected.');
+        } catch (DomainException) {
+            // Identity violation is a domain signal.
+        }
+
+        // The categoria fork created before the clash is rolled back.
+        $this->assertDatabaseCount('user_catalog_items', 1);
     }
 
     // --- R7: forkService single item ------------------------------------------

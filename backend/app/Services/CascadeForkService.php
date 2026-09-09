@@ -16,7 +16,8 @@ use Illuminate\Support\Facades\DB;
  *
  * Each fork method owns exactly one DB transaction: either the whole tree is
  * persisted or nothing is (S7.2). Duplicate identity is checked INSIDE the
- * transaction (user + item_type + base_id, non-trashed — the SoftDeletes
+ * transaction for EVERY row written — top-level item and cascade descendants
+ * alike (user + item_type + base_id, non-trashed — the SoftDeletes
  * scope excludes trashed rows, so re-forking after a soft delete is allowed).
  * Non-trashed descendants are copied REGARDLESS of their base status: a
  * deactivated base is forked with own status 'activo' and only resolves as
@@ -95,8 +96,7 @@ class CascadeForkService
         return DB::transaction(function () use ($baseId, $user) {
             $categoria = Categoria::findOrFail($baseId);
 
-            $this->assertNoExistingFork('categoria', $baseId, $user);
-
+            // Identity asserted inside createCategoriaFork (descendant guard).
             $categoriaFork = $this->createCategoriaFork($categoria, $user, null);
 
             $serviceIds = [];
@@ -128,8 +128,7 @@ class CascadeForkService
         return DB::transaction(function () use ($baseId, $user) {
             $service = Service::findOrFail($baseId);
 
-            $this->assertNoExistingFork('service', $baseId, $user);
-
+            // Identity asserted inside createServiceFork (descendant guard).
             $serviceFork = $this->createServiceFork($service, $user, null, 0);
 
             return ['service' => $serviceFork->id];
@@ -142,6 +141,10 @@ class CascadeForkService
      */
     private function createCategoriaFork(Categoria $categoria, User $user, ?UserCatalogItem $rubroFork): UserCatalogItem
     {
+        // Identity is asserted for EVERY copied row, descendants included
+        // (R3/S3.1): a standalone prior fork of this base aborts the cascade.
+        $this->assertNoExistingFork('categoria', $categoria->id, $user);
+
         return UserCatalogItem::create([
             'user_id' => $user->id,
             'item_type' => 'categoria',
@@ -160,6 +163,9 @@ class CascadeForkService
      */
     private function createServiceFork(Service $service, User $user, ?UserCatalogItem $categoriaFork, int $position): UserCatalogItem
     {
+        // Same descendant identity guard as categoria forks (R3/S3.1).
+        $this->assertNoExistingFork('service', $service->id, $user);
+
         return UserCatalogItem::create([
             'user_id' => $user->id,
             'item_type' => 'service',
