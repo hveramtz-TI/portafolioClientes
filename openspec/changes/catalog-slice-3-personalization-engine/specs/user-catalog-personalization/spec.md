@@ -100,7 +100,13 @@ Resolved value MUST be the override when present, else CURRENT base value (dynam
 
 ### Requirement: R6 Effective Status
 
-Effective status MUST be desactivado if own, base, or ANY ancestor fork is desactivado; activo only when the whole chain is active; no override MAY win against a deactivated ancestor.
+Effective status MUST be desactivado if own, base, or ANY ancestor fork is desactivado; an ancestor counts as desactivado by its OWN effective status (recursive: ancestor's own status, its base, its ancestors — full-chain AND per `docs/flujos/rubro-categoria-servicio-lifecycle.md`); activo only when the whole chain is active; no override MAY win against a deactivated ancestor.
+
+#### Scenario: S6.4-deactivated-base-ancestor-cascades
+
+- GIVEN rubro base deactivated by admin; user forks cascade down to a service
+- WHEN the service fork resolves
+- THEN desactivado (ancestor rubro fork is effectively desactivado through its base)
 
 #### Scenario: S6.1-deactivated-ancestor
 

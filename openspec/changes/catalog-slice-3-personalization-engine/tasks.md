@@ -70,10 +70,10 @@ Chain strategy: feature-branch-chain
 
 ### Unit 3b-resolver (R5, R6; S5.1, S5.2, S5.3, S6.1, S6.2, S6.3)
 
-- [ ] 6.1 RED: Write failing tests `backend/tests/Unit/CatalogResolverTest.php` covering S5.1 (base edit propagates), S5.2 (override wins + origin override + listed), S5.3 (null restores inheritance), S6.1 (deactivated ancestor → desactivado), S6.2 (base deactivated → desactivado), S6.3 (full active chain → activo)
-- [ ] 6.2 GREEN: Implement `backend/app/Services/CatalogResolver.php` — `resolve()` returns id, base_id, name/title, value, description, tags, effective status, origin, overridden_fields; eager-load `parentFork` and `base` depth 3; per-field inheritance: override ?? current base value; origin logic; effective status AND chain
-- [ ] 6.3 REFACTOR: Clean up; ensure Pint passes
-- [ ] 6.4 VERIFY: Run `docker compose exec backend php artisan test --filter=CatalogResolverTest` (SQLite) + `./test-pg.sh --filter=CatalogResolverTest` (PostgreSQL) + Pint
+- [x] 6.1 RED: Write failing tests `backend/tests/Feature/CatalogResolverTest.php` (DB-backed → Feature per slice-3a deviation, tasks.md path corrected) covering S5.1 (base edit propagates), S5.2 (override wins + origin override + listed), S5.3 (null restores inheritance), S6.1 (deactivated ancestor → desactivado), S6.2 (base deactivated → desactivado), S6.3 (full active chain → activo)
+- [x] 6.2 GREEN: Implement `backend/app/Services/CatalogResolver.php` — `resolve()` returns id, base_id, name/title, value, description, tags, effective status, origin, overridden_fields; eager-load `parentFork` and `base` depth 3; per-field inheritance: override ?? current base value; origin logic; effective status AND chain
+- [x] 6.3 REFACTOR: Clean up; ensure Pint passes
+- [x] 6.4 VERIFY: Run `docker compose exec backend php artisan test --filter=CatalogResolverTest` (SQLite) + `./test-pg.sh --filter=CatalogResolverTest` (PostgreSQL) + Pint — 14 passed (60 assertions) both engines, full suite 154 passed (373 assertions), Pint PASS
 - [ ] 6.5 Commit work unit: `feat(catalog): add CatalogResolver with per-field inheritance + effective status (R5,R6)` with tests
 - [ ] 6.6 Settle ledger (orchestrator-owned): native settle for token `3b-resolver` with the full exact flag set (see 2.8).
 
@@ -83,9 +83,9 @@ Chain strategy: feature-branch-chain
 
 ### Unit 3b-cascade (R7; S7.1, S7.2, S7.3, S7.4)
 
-- [ ] 7.2 RED: Write failing tests `backend/tests/Unit/CascadeForkServiceTest.php` covering S7.1 (rubro cascade tree 1+3+6), S7.2 (mid-copy rollback → zero rows), S7.3 (standalone categoria cascade), S7.4 (deactivated descendants copied, own status activo, resolve desactivado via R6)
-- [ ] 7.3 GREEN: Implement `backend/app/Services/CascadeForkService.php` — `forkRubro`, `forkCategoria`, `forkService`; each owns one `DB::transaction`; duplicate identity checked inside; copy non-deleted children regardless of base status; `status='activo'`, empty overrides, correct parent links; propagate exceptions; return tree summary
-- [ ] 7.4 REFACTOR: Clean up; ensure Pint passes
+- [x] 7.2 RED: Write failing tests `backend/tests/Feature/CascadeForkServiceTest.php` (Feature per DB convention, not `tests/Unit/` as originally written) covering S7.1 (rubro cascade tree 1+3+6), S7.2 (mid-copy rollback → zero rows), S7.3 (standalone categoria cascade), S7.4 (deactivated descendants copied, own status activo, resolve desactivado via R6)
+- [x] 7.3 GREEN: Implement `backend/app/Services/CascadeForkService.php` — `forkRubro`, `forkCategoria`, `forkService`; each owns one `DB::transaction`; duplicate identity checked inside; copy non-deleted children regardless of base status; `status='activo'`, empty overrides, correct parent links; propagate exceptions; return tree summary
+- [x] 7.4 REFACTOR: Clean up; ensure Pint passes
 - [ ] 7.5 VERIFY: Run `docker compose exec backend php artisan test --filter=CascadeForkServiceTest` (SQLite) + `./test-pg.sh --filter=CascadeForkServiceTest` (PostgreSQL) + Pint
 - [ ] 7.6 Commit work unit: `feat(catalog): add CascadeForkService with atomic cascade fork (R7)` with tests
 - [ ] 7.7 Settle ledger: `gentle-ai sdd-attempt settle --cwd /home/hgvm/Documentos/GitHub/portafolioClientes --change catalog-slice-3-personalization-engine --request-id 3b-cascade --outcome pass --evidence-revision <commit-sha>`
