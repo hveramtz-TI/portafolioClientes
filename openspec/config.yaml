@@ -1,0 +1,31 @@
+schema: spec-driven
+
+context: |
+  Tech stack: Next.js 16 (App Router) · React 19 · Tailwind CSS 4 · TypeScript · Jest 30; Laravel 13 · PHP 8.3 · PostgreSQL 16 · Redis 7 · MinIO; Docker Compose
+  Architecture: Clean Architecture, feature-first; hybrid catalog model (global base tables + per-user `user_catalog_items` forks); UUID PKs; SoftDeletes; migrations are the schema source of truth
+  Testing: STRICT TDD (RED-GREEN-REFACTOR); backend PHPUnit 12 via `docker compose exec backend php artisan test` plus `./test-pg.sh` for PostgreSQL; Laravel Pint formatting
+  Style: English code, comments, and artifacts; KISS / DRY / YAGNI / SOLID
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Document architecture decisions with rationale
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+    - Forecast the 400-line review budget and recommend stacked PRs when high
+  apply:
+    guidelines:
+      - Follow existing code patterns
+    tdd: true
+    test_command: "docker compose exec backend php artisan test"
+  verify:
+    test_command: "docker compose exec backend php artisan test && ./test-pg.sh"
+    build_command: ""
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas
