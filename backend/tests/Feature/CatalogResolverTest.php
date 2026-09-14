@@ -218,11 +218,13 @@ class CatalogResolverTest extends TestCase
     public function test_origin_matches_personal_override_and_base_states(): void
     {
         $user = User::factory()->create();
-        [, , $service] = $this->makeCatalog();
+        [, $categoria, $service] = $this->makeCatalog();
+        $otherService = Service::create(['categoria_id' => $categoria->id, 'title' => 'API 2', 'value' => 100]);
 
         $personal = $this->personalItem($user, 'service', ['title' => 'Mío', 'value' => 50]);
         $override = $this->serviceFork($user, $service, null, ['title' => 'Mío']);
-        $base = $this->serviceFork($user, $service);
+        // A distinct base: identity is unique per user+item_type+base (amended D5).
+        $base = $this->serviceFork($user, $otherService);
 
         $this->assertSame('personal', $this->resolver->origin($personal));
         $this->assertSame('override', $this->resolver->origin($override));
@@ -415,6 +417,32 @@ class CatalogResolverTest extends TestCase
         $this->assertSame('desactivado', $this->resolver->effectiveStatus($serviceFork));
         $this->assertSame('desactivado', $this->resolver->resolve($serviceFork)['status']);
         $this->assertSame('activo', $serviceFork->fresh()->status);
+    }
+
+    // --- R5 structural keys (S5.4) ------------------------------------------
+
+    public function test_resolve_exposes_structural_keys(): void
+    {
+        $user = User::factory()->create();
+        [, $categoria, $service] = $this->makeCatalog();
+        $categoriaFork = UserCatalogItem::create([
+            'user_id' => $user->id,
+            'item_type' => 'categoria',
+            'base_id' => $categoria->id,
+            'sort_order' => 4,
+        ]);
+        $serviceFork = $this->serviceFork($user, $service, $categoriaFork);
+
+        $resolved = $this->resolver->resolve($serviceFork);
+
+        $this->assertSame('service', $resolved['item_type']);
+        $this->assertSame($categoriaFork->id, $resolved['parent_fork_id']);
+        $this->assertSame(0, $resolved['sort_order']);
+
+        $categoriaResolved = $this->resolver->resolve($categoriaFork);
+        $this->assertSame('categoria', $categoriaResolved['item_type']);
+        $this->assertNull($categoriaResolved['parent_fork_id']);
+        $this->assertSame(4, $categoriaResolved['sort_order']);
     }
 
     // --- D-4 N+1 guard --------------------------------------------------------

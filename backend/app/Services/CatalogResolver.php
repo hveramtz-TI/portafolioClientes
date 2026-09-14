@@ -77,6 +77,12 @@ class CatalogResolver
         $resolved['origin'] = $this->origin($item);
         $resolved['overridden_fields'] = array_keys($overrides);
 
+        // Structural keys (D-4): show and tree consumers need the item type,
+        // the parent link and the sibling order without a second lookup.
+        $resolved['item_type'] = $item->item_type;
+        $resolved['parent_fork_id'] = $item->parent_fork_id;
+        $resolved['sort_order'] = (int) $item->sort_order;
+
         return $resolved;
     }
 

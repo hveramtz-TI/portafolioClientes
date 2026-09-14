@@ -14,7 +14,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Routing\Route;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -50,16 +49,6 @@ class UserCatalogItemRequestTest extends TestCase
         return UserCatalogItem::create([
             'user_id' => $owner->id,
             'item_type' => 'categoria',
-            'base_id' => $base->id,
-            'parent_fork_id' => $parent?->id,
-        ]);
-    }
-
-    private function serviceFork(User $owner, Service $base, ?UserCatalogItem $parent = null): UserCatalogItem
-    {
-        return UserCatalogItem::create([
-            'user_id' => $owner->id,
-            'item_type' => 'service',
             'base_id' => $base->id,
             'parent_fork_id' => $parent?->id,
         ]);
@@ -138,108 +127,41 @@ class UserCatalogItemRequestTest extends TestCase
         }
     }
 
-    // --- R3/S3.1: fork identity ------------------------------------------
-
-    public function test_store_valid_service_fork_passes(): void
-    {
-        $user = User::factory()->create();
-        [, , $service] = $this->makeCatalog();
-
-        $validated = $this->validated(StoreUserCatalogItemRequest::class, [
-            'item_type' => 'service',
-            'base_id' => $service->id,
-        ], $user);
-
-        $this->assertSame('service', $validated['item_type']);
-        $this->assertSame($service->id, $validated['base_id']);
-    }
-
-    public function test_store_duplicate_fork_is_rejected(): void
-    {
-        $user = User::factory()->create();
-        [, , $service] = $this->makeCatalog();
-        $this->serviceFork($user, $service);
-
-        $this->assertRequestFails(StoreUserCatalogItemRequest::class, [
-            'item_type' => 'service',
-            'base_id' => $service->id,
-        ], $user, 'base_id');
-    }
-
-    public function test_store_duplicate_fork_against_soft_deleted_fork_passes(): void
-    {
-        $user = User::factory()->create();
-        [, , $service] = $this->makeCatalog();
-        $fork = $this->serviceFork($user, $service);
-        $fork->delete();
-
-        $validated = $this->validated(StoreUserCatalogItemRequest::class, [
-            'item_type' => 'service',
-            'base_id' => $service->id,
-        ], $user);
-
-        $this->assertSame($service->id, $validated['base_id']);
-    }
-
-    public function test_store_duplicate_fork_allowed_for_other_user(): void
-    {
-        $owner = User::factory()->create();
-        $other = User::factory()->create();
-        [, , $service] = $this->makeCatalog();
-        $this->serviceFork($owner, $service);
-
-        $validated = $this->validated(StoreUserCatalogItemRequest::class, [
-            'item_type' => 'service',
-            'base_id' => $service->id,
-        ], $other);
-
-        $this->assertSame($service->id, $validated['base_id']);
-    }
-
-    // --- R2 base_id referential integrity (J3) ------------------------------
+    // --- R4/S4.3: store never creates forks (base_id not writable) --------
 
     /**
-     * A well-formed but non-existent base_id is an R2 orphan waiting to
-     * happen: the fork must point at a LIVE row of the base table mapped by
-     * item_type (rubro→rubros, categoria→categorias, service→services).
+     * Base items are forked ONLY through the dedicated cascade endpoint (D12);
+     * a non-null base_id on store is rejected with a message pointing there.
      */
-    public function test_store_base_id_that_does_not_exist_is_rejected(): void
-    {
-        $user = User::factory()->create();
-
-        $this->assertRequestFails(StoreUserCatalogItemRequest::class, [
-            'item_type' => 'service',
-            'base_id' => (string) Str::uuid(),
-        ], $user, 'base_id');
-    }
-
-    public function test_store_base_id_of_the_wrong_base_type_is_rejected(): void
-    {
-        $user = User::factory()->create();
-        [$rubro] = $this->makeCatalog();
-
-        // A real rubro id under item_type=service must be checked against the
-        // services table, where it does not exist.
-        $this->assertRequestFails(StoreUserCatalogItemRequest::class, [
-            'item_type' => 'service',
-            'base_id' => $rubro->id,
-        ], $user, 'base_id');
-    }
-
-    public function test_store_base_id_of_trashed_base_is_rejected(): void
+    public function test_store_non_null_base_id_is_rejected(): void
     {
         $user = User::factory()->create();
         [, , $service] = $this->makeCatalog();
-        $service->delete();
 
         $this->assertRequestFails(StoreUserCatalogItemRequest::class, [
             'item_type' => 'service',
             'base_id' => $service->id,
+            'parent_fork_id' => null,
+            'title' => 'X',
+            'value' => 100,
         ], $user, 'base_id');
     }
 
-    // The positive case — a real, live, type-coherent service base_id passes —
-    // is guarded by test_store_valid_service_fork_passes above.
+    public function test_store_omitted_base_id_stays_personal(): void
+    {
+        $user = User::factory()->create();
+        [, $categoria] = $this->makeCatalog();
+        $parent = $this->categoriaFork($user, $categoria);
+
+        $validated = $this->validated(StoreUserCatalogItemRequest::class, [
+            'item_type' => 'service',
+            'parent_fork_id' => $parent->id,
+            'title' => 'X',
+            'value' => 100,
+        ], $user);
+
+        $this->assertArrayNotHasKey('base_id', $validated);
+    }
 
     // --- R3/S3.2: sibling visible-name uniqueness (personal items) --------
 
@@ -457,31 +379,19 @@ class UserCatalogItemRequestTest extends TestCase
         ], $user, 'parent_fork_id');
     }
 
-    public function test_store_forked_categoria_with_rubro_fork_parent_passes(): void
-    {
-        $user = User::factory()->create();
-        [$rubro, $categoria] = $this->makeCatalog();
-        $parent = $this->rubroFork($user, $rubro);
-
-        $validated = $this->validated(StoreUserCatalogItemRequest::class, [
-            'item_type' => 'categoria',
-            'base_id' => $categoria->id,
-            'parent_fork_id' => $parent->id,
-        ], $user);
-
-        $this->assertSame($parent->id, $validated['parent_fork_id']);
-    }
-
     // --- R4/S4.1: tags whitelist ------------------------------------------
 
     public function test_store_service_tags_whitelist_passes(): void
     {
         $user = User::factory()->create();
-        [, , $service] = $this->makeCatalog();
+        [, $categoria] = $this->makeCatalog();
+        $parent = $this->categoriaFork($user, $categoria);
 
         $validated = $this->validated(StoreUserCatalogItemRequest::class, [
             'item_type' => 'service',
-            'base_id' => $service->id,
+            'parent_fork_id' => $parent->id,
+            'title' => 'API',
+            'value' => 100,
             'tags' => ['frontend', 'backend'],
         ], $user);
 
@@ -491,11 +401,14 @@ class UserCatalogItemRequestTest extends TestCase
     public function test_store_service_tags_outside_whitelist_fails(): void
     {
         $user = User::factory()->create();
-        [, , $service] = $this->makeCatalog();
+        [, $categoria] = $this->makeCatalog();
+        $parent = $this->categoriaFork($user, $categoria);
 
         $this->assertRequestFails(StoreUserCatalogItemRequest::class, [
             'item_type' => 'service',
-            'base_id' => $service->id,
+            'parent_fork_id' => $parent->id,
+            'title' => 'API',
+            'value' => 100,
             'tags' => ['ai'],
         ], $user, 'tags.0');
     }
@@ -505,11 +418,14 @@ class UserCatalogItemRequestTest extends TestCase
     public function test_store_status_key_is_rejected(): void
     {
         $user = User::factory()->create();
-        [, , $service] = $this->makeCatalog();
+        [, $categoria] = $this->makeCatalog();
+        $parent = $this->categoriaFork($user, $categoria);
 
         $this->assertRequestFails(StoreUserCatalogItemRequest::class, [
             'item_type' => 'service',
-            'base_id' => $service->id,
+            'parent_fork_id' => $parent->id,
+            'title' => 'API',
+            'value' => 100,
             'status' => 'activo',
         ], $user, 'status');
     }
@@ -517,11 +433,10 @@ class UserCatalogItemRequestTest extends TestCase
     public function test_store_unknown_top_level_key_is_rejected(): void
     {
         $user = User::factory()->create();
-        [$rubro] = $this->makeCatalog();
 
         $this->assertRequestFails(StoreUserCatalogItemRequest::class, [
             'item_type' => 'rubro',
-            'base_id' => $rubro->id,
+            'name' => 'Diseño',
             'foo' => 'bar',
         ], $user, 'foo');
     }
@@ -529,11 +444,13 @@ class UserCatalogItemRequestTest extends TestCase
     public function test_store_negative_value_is_rejected(): void
     {
         $user = User::factory()->create();
-        [, , $service] = $this->makeCatalog();
+        [, $categoria] = $this->makeCatalog();
+        $parent = $this->categoriaFork($user, $categoria);
 
         $this->assertRequestFails(StoreUserCatalogItemRequest::class, [
             'item_type' => 'service',
-            'base_id' => $service->id,
+            'parent_fork_id' => $parent->id,
+            'title' => 'API',
             'value' => -5,
         ], $user, 'value');
     }
@@ -717,5 +634,54 @@ class UserCatalogItemRequestTest extends TestCase
         $request->validateResolved();
 
         $this->assertSame(['title' => 'X', 'value' => 100], $request->mergedOverrides($item));
+    }
+
+    // --- Update: parent_fork_id (R3 move/attach, D-9 detach) --------------
+
+    public function test_update_rubro_explicit_null_parent_persists_null(): void
+    {
+        $user = User::factory()->create();
+        $item = $this->personalItem($user, 'rubro', ['name' => 'Mío']);
+
+        $request = $this->makeRequest(UpdateUserCatalogItemRequest::class, ['parent_fork_id' => null], $user, $item, 'PUT');
+        $request->validateResolved();
+
+        $this->assertArrayHasKey('parent_fork_id', $request->validated());
+        $this->assertNull($request->validated()['parent_fork_id']);
+    }
+
+    public function test_update_rubro_non_null_parent_is_rejected(): void
+    {
+        $user = User::factory()->create();
+        $parent = $this->personalItem($user, 'rubro', ['name' => 'Padre']);
+        $item = $this->personalItem($user, 'rubro', ['name' => 'Mío']);
+
+        $this->assertRequestFails(UpdateUserCatalogItemRequest::class, ['parent_fork_id' => $parent->id], $user, 'parent_fork_id', $item, 'PUT');
+    }
+
+    public function test_update_categoria_detach_is_rejected(): void
+    {
+        $user = User::factory()->create();
+        [$rubro, $categoria] = $this->makeCatalog();
+        $parent = $this->rubroFork($user, $rubro);
+        $item = UserCatalogItem::create([
+            'user_id' => $user->id,
+            'item_type' => 'categoria',
+            'base_id' => $categoria->id,
+            'parent_fork_id' => $parent->id,
+        ]);
+
+        $this->assertRequestFails(UpdateUserCatalogItemRequest::class, ['parent_fork_id' => null], $user, 'parent_fork_id', $item, 'PUT');
+    }
+
+    public function test_update_omitted_parent_leaves_it_untouched(): void
+    {
+        $user = User::factory()->create();
+        $item = $this->personalItem($user, 'rubro', ['name' => 'Mío']);
+
+        $request = $this->makeRequest(UpdateUserCatalogItemRequest::class, [], $user, $item, 'PUT');
+        $request->validateResolved();
+
+        $this->assertArrayNotHasKey('parent_fork_id', $request->validated());
     }
 }
