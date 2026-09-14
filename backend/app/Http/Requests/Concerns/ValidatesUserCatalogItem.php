@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Concerns;
 
 use App\Models\UserCatalogItem;
+use App\Support\UserCatalogSubtree;
 use App\Support\UserCatalogType;
 use Closure;
 use Illuminate\Support\Str;
@@ -188,8 +189,84 @@ trait ValidatesUserCatalogItem
 
             if (! $parentExists) {
                 $fail("The parent fork must be a {$expected} item owned by the same user.");
+
+                return;
             }
+
+            // R3 cycle guard: an item must never be reparented into itself or
+            // one of its descendants. Type coherence makes a real cycle
+            // unreachable through valid rows, but the guard keeps malformed
+            // data from forming one (the resolver assumes an acyclic chain).
+            if ($this->isDescendantOf($value, $item, $userId)) {
+                $fail('A fork cannot be moved under itself or one of its descendants.');
+
+                return;
+            }
+
+            // D8/S5.4: visible-name uniqueness is re-checked at the destination.
+            $this->assertNoDestinationNameClash($item, $value, $userId, $fail);
         };
+    }
+
+    /**
+     * Whether `$candidateId` is `$item` itself or anywhere below it in the
+     * caller's live fork tree (R3 cycle guard), via the shared owner-scoped
+     * subtree traversal.
+     */
+    protected function isDescendantOf(string $candidateId, UserCatalogItem $item, string $userId): bool
+    {
+        return UserCatalogSubtree::contains($item, $candidateId, $userId);
+    }
+
+    /**
+     * Reject the move when another non-deleted sibling under the destination
+     * parent already resolves to the same visible display name (R3/D8/S5.4).
+     * The visible name is the override when present, else the live base value.
+     *
+     * @param  Closure(string, mixed, Closure): void  $fail
+     */
+    protected function assertNoDestinationNameClash(UserCatalogItem $item, string $destinationId, string $userId, Closure $fail): void
+    {
+        $display = $this->displayNameKey($item->item_type);
+        $movingName = $this->visibleDisplayName($item, $display);
+
+        if ($movingName === null) {
+            return;
+        }
+
+        $siblings = UserCatalogItem::query()
+            ->where('user_id', $userId)
+            ->where('item_type', $item->item_type)
+            ->where('parent_fork_id', $destinationId)
+            ->whereNull('deleted_at')
+            ->whereKeyNot($item->id)
+            ->with('base')
+            ->get();
+
+        foreach ($siblings as $sibling) {
+            if ($this->visibleDisplayName($sibling, $display) === $movingName) {
+                $fail('Another item with the same visible name already exists under the destination parent.');
+
+                return;
+            }
+        }
+    }
+
+    /**
+     * The visible display value of an item: its override when present, else
+     * the live base column. Returns null when neither is a non-empty string.
+     */
+    protected function visibleDisplayName(UserCatalogItem $item, string $display): ?string
+    {
+        $override = ($item->overrides ?? [])[$display] ?? null;
+
+        if (is_string($override) && $override !== '') {
+            return $override;
+        }
+
+        $baseValue = $item->base?->getAttribute($display);
+
+        return is_string($baseValue) && $baseValue !== '' ? $baseValue : null;
     }
 
     /**

@@ -6,10 +6,12 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\RubroController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\UserCatalog\DeleteController;
 use App\Http\Controllers\UserCatalog\ForkController;
 use App\Http\Controllers\UserCatalog\ShowController;
 use App\Http\Controllers\UserCatalog\StatusController;
 use App\Http\Controllers\UserCatalog\StoreController;
+use App\Http\Controllers\UserCatalog\TreeController;
 use App\Http\Controllers\UserCatalog\UpdateController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\DB;
@@ -84,10 +86,12 @@ Route::middleware([
         Route::prefix('user-catalog')->group(function () {
             $types = 'rubros|categorias|services';
 
+            Route::get('tree', [TreeController::class, 'tree']);
             Route::post('{type}', [StoreController::class, 'store'])->where('type', $types);
             Route::post('{type}/{baseId}/fork', [ForkController::class, 'fork'])->where('type', $types);
             Route::get('{type}/{fork}', [ShowController::class, 'show'])->where('type', $types);
             Route::put('{type}/{fork}', [UpdateController::class, 'update'])->where('type', $types);
+            Route::delete('{type}/{fork}', [DeleteController::class, 'destroy'])->where('type', $types);
             Route::patch('{type}/{fork}/deactivate', [StatusController::class, 'deactivate'])->where('type', $types);
             Route::patch('{type}/{fork}/reactivate', [StatusController::class, 'reactivate'])->where('type', $types);
         });
