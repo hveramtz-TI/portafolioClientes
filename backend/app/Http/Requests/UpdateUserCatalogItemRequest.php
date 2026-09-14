@@ -12,7 +12,8 @@ use Illuminate\Validation\Rule;
  * Update a user catalog item. Update is per-field override personalization
  * (D-3, D13): every writable field is optional, an explicit null removes the
  * override key (restoring inheritance, R5/S5.3) and an omitted field leaves
- * it untouched. Structural keys (item_type, base_id, parent_fork_id) and
+ * it untouched. `parent_fork_id` is accepted for type-coherent moves and
+ * orphan attachments with the D-9 detach guard; `item_type`, `base_id` and
  * `status` are rejected via #[FailOnUnknownFields] — they are not part of the
  * rules, so they fail with a 422 instead of being silently dropped.
  */
@@ -66,9 +67,13 @@ class UpdateUserCatalogItemRequest extends FormRequest
             $rules['tags.*'] = ['string', Rule::in(self::ALLOWED_TAGS)];
         }
 
+        // R3 move/attach + D-9 detach: validated only when present. A rubro
+        // explicit null is legal; categoria/service explicit null is rejected.
+        $rules['parent_fork_id'] = ['sometimes', $this->parentForkUpdateRule($item, $type, $userId)];
+
         // Sibling visible-name uniqueness still applies to personal items on
         // rename; the item itself is excluded and its parent scopes the
-        // search, since parent_fork_id is not writable (R3/S3.2).
+        // search, since a move re-checks uniqueness at the destination (D8).
         if ($item->base_id === null && $userId !== null) {
             $display = $this->displayNameKey($type);
             $rules[$display][] = $this->siblingNameRule($type, $userId, $item->parent_fork_id, $item->id);
