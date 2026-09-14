@@ -205,6 +205,24 @@ class UserCatalogForkApiCrudTest extends TestCase
             ->assertJsonPath('status', 'desactivado');
     }
 
+    /**
+     * JD4-1: the fork endpoint is a create-ability surface like store. The admin
+     * role never manages another user's private catalog (policy create denies
+     * admin), so a fork POST must 403 before any row is written.
+     */
+    public function test_s1_7_admin_is_forbidden_from_forking_and_regular_user_still_creates(): void
+    {
+        $rubro = $this->baseRubro(0, 0);
+
+        Sanctum::actingAs(User::factory()->create(['role' => 'admin']));
+        $this->postJson("/api/user-catalog/rubros/{$rubro->id}/fork")->assertForbidden();
+        $this->assertSame(0, UserCatalogItem::count());
+
+        $user = $this->owner();
+        $this->postJson("/api/user-catalog/rubros/{$rubro->id}/fork")->assertCreated();
+        $this->assertSame(1, UserCatalogItem::where('user_id', $user->id)->count());
+    }
+
     // --- R2: item CRUD (S2.1-S2.7) ----------------------------------------
 
     public function test_s2_1_store_creates_personal_item_owned_by_caller(): void
