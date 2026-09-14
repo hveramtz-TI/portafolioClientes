@@ -74,9 +74,16 @@ class UpdateUserCatalogItemRequest extends FormRequest
         // Sibling visible-name uniqueness still applies to personal items on
         // rename; the item itself is excluded and its parent scopes the
         // search, since a move re-checks uniqueness at the destination (D8).
+        // JD4-2: when the same request moves the item, the uniqueness scope is
+        // the SUBMITTED destination parent — not the old parent — so a
+        // move+rename is judged where the item will actually live.
         if ($item->base_id === null && $userId !== null) {
             $display = $this->displayNameKey($type);
-            $rules[$display][] = $this->siblingNameRule($type, $userId, $item->parent_fork_id, $item->id);
+            $submittedParent = $this->input('parent_fork_id');
+            $scopeParentId = is_string($submittedParent) && $submittedParent !== ''
+                ? $submittedParent
+                : $item->parent_fork_id;
+            $rules[$display][] = $this->siblingNameRule($type, $userId, $scopeParentId, $item->id);
         }
 
         return $rules;

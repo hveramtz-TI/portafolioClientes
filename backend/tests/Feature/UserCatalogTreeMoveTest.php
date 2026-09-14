@@ -391,6 +391,59 @@ class UserCatalogTreeMoveTest extends TestCase
         $this->assertSame('activo', $service->fresh()->status);
     }
 
+    /**
+     * JD4-2(a): a PUT that moves AND renames in one request must check the
+     * destination against the SUBMITTED name. The old visible name ('S') is
+     * free under catB, so the unfixed code persists 'T' as a duplicate of the
+     * destination sibling (R5/D8 violation).
+     */
+    public function test_s5_9_move_with_rename_to_a_destination_visible_name_is_rejected(): void
+    {
+        $user = $this->owner();
+        $rubro = $this->baseRubro([0, 0]);
+        $rootId = $this->forkRubro($rubro);
+
+        $catForks = UserCatalogItem::where('parent_fork_id', $rootId)->orderBy('sort_order')->get();
+        [$catA, $catB] = [$catForks[0], $catForks[1]];
+
+        $this->item($user, 'service', null, $catB, ['title' => 'T', 'value' => 1]);
+        $mover = $this->item($user, 'service', null, $catA, ['title' => 'S', 'value' => 2]);
+
+        $this->putJson("/api/user-catalog/services/{$mover->id}", ['title' => 'T', 'parent_fork_id' => $catB->id])
+            ->assertStatus(422)->assertJsonValidationErrors('parent_fork_id');
+
+        $mover->refresh();
+        $this->assertSame($catA->id, $mover->parent_fork_id);
+        $this->assertSame('S', $mover->overrides['title']);
+    }
+
+    /**
+     * JD4-2(b): the rename uniqueness scope on a move+rename is the DESTINATION
+     * parent, not the origin. 'X' clashes under catA (origin) but is free under
+     * catB (destination), so the move+rename must succeed.
+     */
+    public function test_s5_10_move_with_rename_to_a_name_free_at_destination_is_accepted(): void
+    {
+        $user = $this->owner();
+        $rubro = $this->baseRubro([0, 0]);
+        $rootId = $this->forkRubro($rubro);
+
+        $catForks = UserCatalogItem::where('parent_fork_id', $rootId)->orderBy('sort_order')->get();
+        [$catA, $catB] = [$catForks[0], $catForks[1]];
+
+        $this->item($user, 'service', null, $catA, ['title' => 'X', 'value' => 1]);
+        $mover = $this->item($user, 'service', null, $catA, ['title' => 'S', 'value' => 2]);
+
+        $this->putJson("/api/user-catalog/services/{$mover->id}", ['title' => 'X', 'parent_fork_id' => $catB->id])
+            ->assertOk()
+            ->assertJsonPath('parent_fork_id', $catB->id)
+            ->assertJsonPath('title', 'X');
+
+        $mover->refresh();
+        $this->assertSame($catB->id, $mover->parent_fork_id);
+        $this->assertSame('X', $mover->overrides['title']);
+    }
+
     // --- R6: tree/list (S6.1-S6.5) ----------------------------------------
 
     public function test_s6_1_tree_returns_owner_nested_graph_in_sort_order(): void

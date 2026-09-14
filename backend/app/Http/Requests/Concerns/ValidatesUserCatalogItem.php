@@ -221,14 +221,16 @@ trait ValidatesUserCatalogItem
     /**
      * Reject the move when another non-deleted sibling under the destination
      * parent already resolves to the same visible display name (R3/D8/S5.4).
-     * The visible name is the override when present, else the live base value.
+     * The moving name is the effective name AFTER this request: the submitted
+     * override when the same PUT also renames, else the item's current visible
+     * name (override present → override, otherwise the live base value).
      *
      * @param  Closure(string, mixed, Closure): void  $fail
      */
     protected function assertNoDestinationNameClash(UserCatalogItem $item, string $destinationId, string $userId, Closure $fail): void
     {
         $display = $this->displayNameKey($item->item_type);
-        $movingName = $this->visibleDisplayName($item, $display);
+        $movingName = $this->effectiveNameAfterUpdate($item, $display);
 
         if ($movingName === null) {
             return;
@@ -250,6 +252,29 @@ trait ValidatesUserCatalogItem
                 return;
             }
         }
+    }
+
+    /**
+     * JD4-2: the display name the moving item will have at the destination.
+     * When the request submits the display field, that submitted value wins
+     * (an explicit null removes the override, restoring the live base value);
+     * when the field is absent, the item keeps its current visible name.
+     */
+    protected function effectiveNameAfterUpdate(UserCatalogItem $item, string $display): ?string
+    {
+        if (! array_key_exists($display, $this->all())) {
+            return $this->visibleDisplayName($item, $display);
+        }
+
+        $submitted = $this->input($display);
+
+        if (is_string($submitted) && $submitted !== '') {
+            return $submitted;
+        }
+
+        $baseValue = $item->base?->getAttribute($display);
+
+        return is_string($baseValue) && $baseValue !== '' ? $baseValue : null;
     }
 
     /**
