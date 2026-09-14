@@ -1,7 +1,7 @@
 # Planning — Rubros, Categorías y Servicios
 
 **Fecha:** 2026-08-28
-**Estado:** 🔵 **En progreso (actualizado 2026-09-09)** — Slices 1–3 (de 7) integrados y verificados; el detalle en *Registro de progreso* al final. Pendientes: Slices 4–7 (API de forks sobre el motor ya existente, seeders, frontend).
+**Estado:** 🔵 **En progreso (actualizado 2026-09-14)** — Slices 1–3 (de 7) integrados, verificados y cerrados (cambio SDD archivado); el detalle en *Registro de progreso* al final. Pendientes: Slices 4–7 (API de forks sobre el motor ya existente, seeders, frontend).
 **Objetivo:** Implementar el catálogo personalizable de rubros, categorías y servicios sobre el modelo híbrido (catálogo base global + fork personal por usuario), incluyendo CRUD, lifecycle (desactivar/eliminar/reactivar), seeders del catálogo base y personalización sin alterar la base ni afectar a otros usuarios.
 
 ## Contexto
@@ -166,4 +166,10 @@ Se retomó el sprint pospuesto. Estado del chain de 7 slices:
 **HUs afectadas:** **sin cambio de estado** — el motor está implementado y verificado, pero HU-013–HU-025 siguen necesitando la API HTTP (Slice 4) y el frontend (Slices 5–7) para ser operables end-to-end.
 
 **Deuda documentada para Slice 4:** forks standalone de categoría/servicio nacen con `parent_fork_id = null` (el adjunte vía Update debe proteger raíces huérfanas); decisión de serialización de `parent_fork_id: null` en rubros (J4); race de unicidad app-level aceptado (D5).
+
+### 2026-09-14 — Cierre del cambio SDD Slice 3 (verify + archive)
+
+- **Verify:** veredicto **VERIFIED_WITH_WARNINGS** (reporte en `openspec/changes/archive/2026-09-14-catalog-slice-3-personalization-engine/verify-report.md`): R1–R7 completos, 20/20 escenarios cubiertos con tests, 172 tests / 490 aserciones green en SQLite y PostgreSQL, Pint PASS. Único WARNING: criterio de tamaño de PR ≤400 líneas incumplido — desviación de proceso documentada y aprobada en el ledger vía `size:exception` (el excedente es cobertura scenario-por-método mandateada); sin fix de código.
+- **Archive:** el change `catalog-slice-3-personalization-engine` quedó archivado y su spec sincronizado como spec canónica en `openspec/specs/user-catalog-personalization/spec.md` (R1–R7, 20 escenarios). Commits de cierre: `6731f63` (verify report), `d28bd05` (archive), integrados en `main`.
+- **Deuda conocida delegada a Slice 4 (persiste):** contrato del `parent_fork_id: null` explícito en rubros (J4), decisión de índice único en DB vs validación app-level (D5), y superficie HTTP de forks (routes/controladores, hoy `routes/api.php` con 0 diff).
 
