@@ -100,7 +100,7 @@ Chain strategy: pending
 ## Phase 3: Docs Mirror & Close-Out
 
 - [x] 3.1 Update `docs/planning/planning3.md` — amend D5 row to reflect DB partial unique index (per user approval), append Slice 4 progress log
-- [ ] 3.2 Notion mirror of `planning3.md` updated (orchestrator-owned at close-out)
+- [x] 3.2 Notion mirror of `planning3.md` updated (orchestrator-owned at close-out)
 
 ## Dependencies
 - Unit 2 **depends on** Unit 1 contracts: `CatalogResolver` structural keys, `CascadeForkService` tree summary, `Store/Update` request rules, policy `create`, 409 render map, live-identity index migration must be applied first

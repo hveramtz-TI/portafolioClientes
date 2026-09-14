@@ -1,7 +1,7 @@
 # Planning — Rubros, Categorías y Servicios
 
 **Fecha:** 2026-08-28
-**Estado:** 🔵 **En progreso (actualizado 2026-09-14)** — Slices 1–3 (de 7) integrados, verificados y cerrados (cambio SDD archivado); el detalle en *Registro de progreso* al final. Pendientes: Slices 4–7 (API de forks sobre el motor ya existente, seeders, frontend).
+**Estado:** 🔵 **En progreso (actualizado 2026-09-14)** — Slices 1–4 (de 7) integrados, verificados y cerrados (cambios SDD archivados); el detalle en *Registro de progreso* al final. Pendientes: Slices 5–7 (seeders del catálogo base y frontend de catálogo).
 **Objetivo:** Implementar el catálogo personalizable de rubros, categorías y servicios sobre el modelo híbrido (catálogo base global + fork personal por usuario), incluyendo CRUD, lifecycle (desactivar/eliminar/reactivar), seeders del catálogo base y personalización sin alterar la base ni afectar a otros usuarios.
 
 ## Contexto
@@ -186,3 +186,10 @@ Cambio SDD `catalog-slice-4-fork-api` (proposal/spec/design/tasks/apply-progress
 
 **HUs afectadas:** sin cambio de estado — el backend de forks ya es operable vía API, pero HU-013–HU-025 siguen requiriendo el frontend (Slices 5–7, seeders incluidos) para ser end-to-end.
 
+### 2026-09-14 — Cierre de Slice 4 (Judgment Day + verify + archive)
+
+- **Review adversarial (Judgment Day, jueces ciegos A+B):** cero CRITICAL; cuatro hallazgos accionables corregidos en ronda acotada con TDD RED→GREEN — JD4-1 `ForkController` sin autorización `create` (bypass de admin), JD4-2 PUT move+rename validaba contra nombre/parent **viejos** (podía persistir duplicados en destino), JD4-3 el render map PG tomaba CUALQUIER 23505 como "fork duplicado", JD4-4 ids malformados daban 500 en PG vs 404 en SQLite (violaba R7). Re-judgment acotado: ambos jueces limpios, ledger terminal **APPROVED** (`review-ledger-judgment-day.md`). JD4-5 (asimetría de unicidad nombre-visible entre store/rename vs move) queda INFO por pre-existente.
+- **Integración en cadena (feature-branch-chain):** #16 (4b→4a) → #15 (4a→tracker) → #17 (tracker→main en `8b56c2e`).
+- **Verify:** **VERIFIED_WITH_WARNINGS** — 11/11 requisitos y **55/55 escenarios** trazables (40 fork-api + 15 delta), **219 tests / 795 aserciones** green en SQLite **y** PostgreSQL (reproducido independientemente), Pint PASS 24 archivos, cero CRITICAL. Warnings cerradas: texto D-5 del design reconciliado al as-built (carga plana con presupuesto constante medido 4/≤6) y migración aplicada en dev.
+- **Archive:** change archivado en `openspec/changes/archive/2026-09-14-catalog-slice-4-fork-api/` con specs sincronizadas: capability nueva `openspec/specs/user-catalog-fork-api/spec.md` + `user-catalog-personalization` actualizada (R3/R4/R5 modificados, **R8 añadido** — índice de identidad live).
+- **Deuda delegada a Slice 5+:** assert HTTP-level del 403 cross-owner en DELETE (hoy probado en capa policy), asimetría JD4-5 de nombres visibles, deuda Pint pre-existente de 11 archivos vírgenes del change.
