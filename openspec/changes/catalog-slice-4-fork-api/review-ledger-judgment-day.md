@@ -35,3 +35,21 @@ follow-up.
 ## Decision log
 
 - 2026-09-14 round 1 complete; maintainer decision on correction pending (see next section).
+- 2026-09-14 maintainer approved FULL bounded correction round JD4-1..JD4-4 (suspects included: deterministic proofs against this change's own contracts). JD4-5 stays INFO/follow-up.
+- 2026-09-14 fix round landed as 4 atomic RED→GREEN commits on `feat/catalog-slice-4b-tree-cascade-move`: 4073117 (JD4-1 fork create authorization), 3484210 (JD4-2 move+rename validates submitted name at destination parent), 116943c (JD4-3 PG render map scoped to `user_catalog_items_live_identity_unique`), bac62d8 (JD4-4 whereUuid on `{baseId}`/`{fork}`). 196 real lines vs 400 budget. Full suite 219/795 green on SQLite AND PostgreSQL (combined sha256 6f469dc9…); Pint PASS 7 touched files. Attempt ledger settled passed (attempt 3, remediates e8133ae8) with one maintainer-approved accounting reset (ledger had charged the mid-attempt branch checkout, not fix lines).
+- 2026-09-14 scoped re-judgment (both judges, frozen ledger + fix delta only): JUDGE A clean, JUDGE B clean — no fix-caused defects.
+
+## Terminal state
+
+```yaml
+target_identity: a9e8661...500702a (round-1) + fix delta eeb5e62...bac62d8
+round: 1 (of max 2) — correction used, re-judgment passed
+confirmed_fixed: [JD4-1, JD4-2, JD4-3, JD4-4]
+remaining_severe: []
+info_open: [JD4-5]
+fix_caused_defects: []
+scoped_rejudgment: approved
+terminal_state: approved
+JUDGMENT: APPROVED ✅
+```
+
