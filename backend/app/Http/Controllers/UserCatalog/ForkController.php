@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\UserCatalog;
 
 use App\Http\Controllers\Controller;
+use App\Models\UserCatalogItem;
 use App\Services\CascadeForkService;
 use App\Support\UserCatalogType;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * Fork a base catalog item into the caller's private tree (R1, D12). The only
@@ -20,6 +22,11 @@ class ForkController extends Controller
     {
         $itemType = UserCatalogType::fromRoute($type);
         $user = request()->user();
+
+        // JD4-1: forking is a create on the personal catalog, so it carries the
+        // same ability gate as store (D-8): the admin role is denied by the
+        // policy and must never reach the cascade engine.
+        Gate::authorize('create', UserCatalogItem::class);
 
         $summary = match ($itemType) {
             'rubro' => $this->forks->forkRubro($baseId, $user),

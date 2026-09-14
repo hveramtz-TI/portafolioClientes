@@ -45,8 +45,15 @@ return Application::configure(basePath: dirname(__DIR__))
                 return null;
             }
 
+            // JD4-3: only the user-catalog fork duplicate becomes this 409.
+            // PostgreSQL: SQLSTATE 23505 covers every unique violation, so the
+            // branch is scoped by the constraint the migration created
+            // (2026_09_14_000000: user_catalog_items_live_identity_unique),
+            // which the driver message quotes. SQLite keeps its message-scoped
+            // match. Anything else falls through to the default handler.
             $sqlState = $exception->errorInfo[0] ?? $exception->getCode();
-            $isDuplicate = $sqlState === '23505'
+            $isDuplicate = ($sqlState === '23505'
+                    && str_contains($exception->getMessage(), 'user_catalog_items_live_identity_unique'))
                 || ($sqlState === '23000' && str_contains($exception->getMessage(), 'UNIQUE constraint failed: user_catalog_items'));
 
             if (! $isDuplicate) {

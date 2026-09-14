@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Concerns;
 
 use App\Models\UserCatalogItem;
+use App\Support\UserCatalogSubtree;
 use App\Support\UserCatalogType;
 use Closure;
 use Illuminate\Support\Str;
@@ -188,8 +189,109 @@ trait ValidatesUserCatalogItem
 
             if (! $parentExists) {
                 $fail("The parent fork must be a {$expected} item owned by the same user.");
+
+                return;
             }
+
+            // R3 cycle guard: an item must never be reparented into itself or
+            // one of its descendants. Type coherence makes a real cycle
+            // unreachable through valid rows, but the guard keeps malformed
+            // data from forming one (the resolver assumes an acyclic chain).
+            if ($this->isDescendantOf($value, $item, $userId)) {
+                $fail('A fork cannot be moved under itself or one of its descendants.');
+
+                return;
+            }
+
+            // D8/S5.4: visible-name uniqueness is re-checked at the destination.
+            $this->assertNoDestinationNameClash($item, $value, $userId, $fail);
         };
+    }
+
+    /**
+     * Whether `$candidateId` is `$item` itself or anywhere below it in the
+     * caller's live fork tree (R3 cycle guard), via the shared owner-scoped
+     * subtree traversal.
+     */
+    protected function isDescendantOf(string $candidateId, UserCatalogItem $item, string $userId): bool
+    {
+        return UserCatalogSubtree::contains($item, $candidateId, $userId);
+    }
+
+    /**
+     * Reject the move when another non-deleted sibling under the destination
+     * parent already resolves to the same visible display name (R3/D8/S5.4).
+     * The moving name is the effective name AFTER this request: the submitted
+     * override when the same PUT also renames, else the item's current visible
+     * name (override present → override, otherwise the live base value).
+     *
+     * @param  Closure(string, mixed, Closure): void  $fail
+     */
+    protected function assertNoDestinationNameClash(UserCatalogItem $item, string $destinationId, string $userId, Closure $fail): void
+    {
+        $display = $this->displayNameKey($item->item_type);
+        $movingName = $this->effectiveNameAfterUpdate($item, $display);
+
+        if ($movingName === null) {
+            return;
+        }
+
+        $siblings = UserCatalogItem::query()
+            ->where('user_id', $userId)
+            ->where('item_type', $item->item_type)
+            ->where('parent_fork_id', $destinationId)
+            ->whereNull('deleted_at')
+            ->whereKeyNot($item->id)
+            ->with('base')
+            ->get();
+
+        foreach ($siblings as $sibling) {
+            if ($this->visibleDisplayName($sibling, $display) === $movingName) {
+                $fail('Another item with the same visible name already exists under the destination parent.');
+
+                return;
+            }
+        }
+    }
+
+    /**
+     * JD4-2: the display name the moving item will have at the destination.
+     * When the request submits the display field, that submitted value wins
+     * (an explicit null removes the override, restoring the live base value);
+     * when the field is absent, the item keeps its current visible name.
+     */
+    protected function effectiveNameAfterUpdate(UserCatalogItem $item, string $display): ?string
+    {
+        if (! array_key_exists($display, $this->all())) {
+            return $this->visibleDisplayName($item, $display);
+        }
+
+        $submitted = $this->input($display);
+
+        if (is_string($submitted) && $submitted !== '') {
+            return $submitted;
+        }
+
+        $baseValue = $item->base?->getAttribute($display);
+
+        return is_string($baseValue) && $baseValue !== '' ? $baseValue : null;
+    }
+
+    /**
+     * The visible display value of an item: its override when present, else
+     * the live base column. Returns null when neither is a non-empty string.
+     */
+    protected function visibleDisplayName(UserCatalogItem $item, string $display): ?string
+    {
+        $override = ($item->overrides ?? [])[$display] ?? null;
+
+        if (is_string($override) && $override !== '') {
+            return $override;
+        }
+
+        $baseValue = $item->base?->getAttribute($display);
+
+        return is_string($baseValue) && $baseValue !== '' ? $baseValue : null;
     }
 
     /**
