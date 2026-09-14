@@ -576,4 +576,21 @@ class UserCatalogForkApiCrudTest extends TestCase
         $response->assertStatus(500);
         $this->assertStringNotContainsString('live fork', (string) $response->getContent());
     }
+
+    /**
+     * JD4-4: {baseId}/{fork} are uuid columns, so a malformed id must never
+     * reach the database (PG 22P02 → 500 vs SQLite 404 breaks R7/S7.3). The
+     * uuid-constrained routes must not match at all → 404 on both engines.
+     */
+    public function test_s7_8_malformed_uuids_404_before_touching_the_database(): void
+    {
+        $this->owner();
+
+        $this->getJson('/api/user-catalog/services/not-a-uuid')->assertNotFound();
+        $this->putJson('/api/user-catalog/services/not-a-uuid', ['value' => 1])->assertNotFound();
+        $this->deleteJson('/api/user-catalog/services/not-a-uuid')->assertNotFound();
+        $this->patchJson('/api/user-catalog/services/not-a-uuid/deactivate')->assertNotFound();
+        $this->patchJson('/api/user-catalog/services/not-a-uuid/reactivate')->assertNotFound();
+        $this->postJson('/api/user-catalog/rubros/not-a-uuid/fork')->assertNotFound();
+    }
 }

@@ -87,13 +87,16 @@ Route::middleware([
             $types = 'rubros|categorias|services';
 
             Route::get('tree', [TreeController::class, 'tree']);
+            // JD4-4: {baseId}/{fork} are uuid columns. Constraining them keeps
+            // malformed ids out of the database (PG 22P02 → 500) so a bad id
+            // 404s on both engines, honoring R7 (no scenario surfaces as 500).
             Route::post('{type}', [StoreController::class, 'store'])->where('type', $types);
-            Route::post('{type}/{baseId}/fork', [ForkController::class, 'fork'])->where('type', $types);
-            Route::get('{type}/{fork}', [ShowController::class, 'show'])->where('type', $types);
-            Route::put('{type}/{fork}', [UpdateController::class, 'update'])->where('type', $types);
-            Route::delete('{type}/{fork}', [DeleteController::class, 'destroy'])->where('type', $types);
-            Route::patch('{type}/{fork}/deactivate', [StatusController::class, 'deactivate'])->where('type', $types);
-            Route::patch('{type}/{fork}/reactivate', [StatusController::class, 'reactivate'])->where('type', $types);
+            Route::post('{type}/{baseId}/fork', [ForkController::class, 'fork'])->where('type', $types)->whereUuid('baseId');
+            Route::get('{type}/{fork}', [ShowController::class, 'show'])->where('type', $types)->whereUuid('fork');
+            Route::put('{type}/{fork}', [UpdateController::class, 'update'])->where('type', $types)->whereUuid('fork');
+            Route::delete('{type}/{fork}', [DeleteController::class, 'destroy'])->where('type', $types)->whereUuid('fork');
+            Route::patch('{type}/{fork}/deactivate', [StatusController::class, 'deactivate'])->where('type', $types)->whereUuid('fork');
+            Route::patch('{type}/{fork}/reactivate', [StatusController::class, 'reactivate'])->where('type', $types)->whereUuid('fork');
         });
 
         // Admin only routes
