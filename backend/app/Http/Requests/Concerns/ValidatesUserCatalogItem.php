@@ -3,10 +3,11 @@
 namespace App\Http\Requests\Concerns;
 
 use App\Models\UserCatalogItem;
+use App\Support\UserCatalogSubtree;
+use App\Support\UserCatalogType;
 use Closure;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Exists;
-use Illuminate\Validation\Rules\Unique;
 
 /**
  * Shared validation contract for the user catalog item store/update pair
@@ -53,33 +54,70 @@ trait ValidatesUserCatalogItem
     }
 
     /**
-     * Resolve the item type from the payload, falling back to the bound item.
+     * Resolve the item type: the plural route segment is authoritative (D-1),
+     * then the payload `item_type`, then the bound item.
      */
     protected function itemTypeFromInput(?UserCatalogItem $item = null): string
     {
+        $routeType = $this->routeItemType();
+
+        if ($routeType !== null) {
+            return $routeType;
+        }
+
         $type = $this->input('item_type');
 
         return is_string($type) && $type !== '' ? $type : ($item?->item_type ?? '');
     }
 
     /**
-     * Whether the payload forks an existing base item (R3 fork identity).
+     * The singular item type carried by the {type} route segment, if any.
      */
-    protected function hasForkBase(): bool
+    protected function routeItemType(): ?string
     {
-        $baseId = $this->input('base_id');
-
-        return is_string($baseId) && $baseId !== '';
+        return UserCatalogType::fromRoute($this->route('type'));
     }
 
     /**
-     * Defensively read the route-bound UserCatalogItem. There are no routes
-     * yet, so the bound value may already be the model (implicit binding) or
-     * a raw id; both are resolved so authorize() and rules() stay testable.
+     * The route {type} and the payload `item_type` must agree (D-1).
+     *
+     * @return Closure(string, mixed, Closure): void
+     */
+    protected function routeTypeCoherenceRule(): Closure
+    {
+        return function ($attribute, $value, $fail): void {
+            $routeType = $this->routeItemType();
+
+            if ($routeType !== null && $value !== $routeType) {
+                $fail('The item type must match the route type.');
+            }
+        };
+    }
+
+    /**
+     * Store never creates forks: a non-null `base_id` is rejected with a
+     * message pointing at the dedicated cascade endpoint (R4/S4.3, D12).
+     *
+     * @return Closure(string, mixed, Closure): void
+     */
+    protected function baseIdForbiddenRule(): Closure
+    {
+        return function ($attribute, $value, $fail): void {
+            if ($value !== null && $value !== '') {
+                $fail('The base_id field is not writable; fork base items through the fork endpoint (POST /api/user-catalog/{type}/{baseId}/fork).');
+            }
+        };
+    }
+
+    /**
+     * Defensively read the route-bound UserCatalogItem. The HTTP routes bind
+     * `{fork}` (implicit binding); the slice-3 request tests bind
+     * `{userCatalogItem}` explicitly. Both are resolved so authorize() and
+     * rules() stay testable.
      */
     protected function routeItem(): ?UserCatalogItem
     {
-        $bound = $this->route('userCatalogItem');
+        $bound = $this->route('userCatalogItem') ?? $this->route('fork');
 
         if ($bound instanceof UserCatalogItem) {
             return $bound;
@@ -97,8 +135,6 @@ trait ValidatesUserCatalogItem
     {
         return [
             'item_type.in' => 'The item type must be one of: rubro, categoria, service.',
-            'base_id.unique' => 'You already have a fork of this item for the selected type.',
-            'base_id.exists' => 'The selected base item does not exist in the catalog for the selected item type.',
             'parent_fork_id.required' => 'A personal categoria/service item must belong to a fork tree (parent_fork_id).',
             'status' => 'The status field is not writable; status changes go through dedicated endpoints.',
             'prohibited' => 'The :attribute field is not allowed.',
@@ -106,38 +142,156 @@ trait ValidatesUserCatalogItem
     }
 
     /**
-     * R3/S3.1 fork identity: reject a second non-trashed fork of the same
-     * base by the same user+item_type. Soft-deleted forks are ignored.
+     * R3 move/attach + D-9 detach contract for `parent_fork_id` on update.
+     * The key is validated only when present (`sometimes`): a rubro explicit
+     * null is legal (J4), while a categoria/service explicit null is a detach
+     * and is rejected. A non-null parent must be a type-coherent, live fork
+     * owned by the caller and never the item itself (cycle guard).
      *
      * @return Closure(string, mixed, Closure): void
      */
-    protected function forkIdentityUniqueRule(string $type, string $userId): Unique
+    protected function parentForkUpdateRule(UserCatalogItem $item, string $type, ?string $userId): Closure
     {
-        return Rule::unique('user_catalog_items', 'base_id')->where(
-            fn ($query) => $query
+        return function ($attribute, $value, $fail) use ($item, $type, $userId): void {
+            if ($value === null) {
+                if ($type !== 'rubro') {
+                    $fail('A categoria/service fork cannot be detached from its parent.');
+                }
+
+                return;
+            }
+
+            if (! is_string($value) || ! Str::isUuid($value)) {
+                $fail('The parent fork must be a valid UUID.');
+
+                return;
+            }
+
+            if ($type === 'rubro') {
+                $fail('A rubro item cannot have a parent fork.');
+
+                return;
+            }
+
+            if ($userId === null) {
+                return;
+            }
+
+            $expected = $type === 'categoria' ? 'rubro' : 'categoria';
+
+            $parentExists = UserCatalogItem::query()
+                ->whereKey($value)
+                ->whereKeyNot($item->id)
                 ->where('user_id', $userId)
-                ->where('item_type', $type)
+                ->where('item_type', $expected)
                 ->whereNull('deleted_at')
-        );
+                ->exists();
+
+            if (! $parentExists) {
+                $fail("The parent fork must be a {$expected} item owned by the same user.");
+
+                return;
+            }
+
+            // R3 cycle guard: an item must never be reparented into itself or
+            // one of its descendants. Type coherence makes a real cycle
+            // unreachable through valid rows, but the guard keeps malformed
+            // data from forming one (the resolver assumes an acyclic chain).
+            if ($this->isDescendantOf($value, $item, $userId)) {
+                $fail('A fork cannot be moved under itself or one of its descendants.');
+
+                return;
+            }
+
+            // D8/S5.4: visible-name uniqueness is re-checked at the destination.
+            $this->assertNoDestinationNameClash($item, $value, $userId, $fail);
+        };
     }
 
     /**
-     * R2 base reference: a non-null base_id MUST point at a live row of the
-     * base table mapped by item_type (rubro→rubros, categoria→categorias,
-     * service→services). Checking the type-mapped table enforces existence
-     * AND type coherence in one rule, blocking R2-orphan rows at the door;
-     * trashed bases are excluded, matching the fork engines' findOrFail/
-     * default-scope behaviour. Only built for a validated item_type.
+     * Whether `$candidateId` is `$item` itself or anywhere below it in the
+     * caller's live fork tree (R3 cycle guard), via the shared owner-scoped
+     * subtree traversal.
      */
-    protected function baseExistsRule(string $type): Exists
+    protected function isDescendantOf(string $candidateId, UserCatalogItem $item, string $userId): bool
     {
-        $table = match ($type) {
-            'rubro' => 'rubros',
-            'categoria' => 'categorias',
-            'service' => 'services',
-        };
+        return UserCatalogSubtree::contains($item, $candidateId, $userId);
+    }
 
-        return Rule::exists($table, 'id')->whereNull('deleted_at');
+    /**
+     * Reject the move when another non-deleted sibling under the destination
+     * parent already resolves to the same visible display name (R3/D8/S5.4).
+     * The moving name is the effective name AFTER this request: the submitted
+     * override when the same PUT also renames, else the item's current visible
+     * name (override present → override, otherwise the live base value).
+     *
+     * @param  Closure(string, mixed, Closure): void  $fail
+     */
+    protected function assertNoDestinationNameClash(UserCatalogItem $item, string $destinationId, string $userId, Closure $fail): void
+    {
+        $display = $this->displayNameKey($item->item_type);
+        $movingName = $this->effectiveNameAfterUpdate($item, $display);
+
+        if ($movingName === null) {
+            return;
+        }
+
+        $siblings = UserCatalogItem::query()
+            ->where('user_id', $userId)
+            ->where('item_type', $item->item_type)
+            ->where('parent_fork_id', $destinationId)
+            ->whereNull('deleted_at')
+            ->whereKeyNot($item->id)
+            ->with('base')
+            ->get();
+
+        foreach ($siblings as $sibling) {
+            if ($this->visibleDisplayName($sibling, $display) === $movingName) {
+                $fail('Another item with the same visible name already exists under the destination parent.');
+
+                return;
+            }
+        }
+    }
+
+    /**
+     * JD4-2: the display name the moving item will have at the destination.
+     * When the request submits the display field, that submitted value wins
+     * (an explicit null removes the override, restoring the live base value);
+     * when the field is absent, the item keeps its current visible name.
+     */
+    protected function effectiveNameAfterUpdate(UserCatalogItem $item, string $display): ?string
+    {
+        if (! array_key_exists($display, $this->all())) {
+            return $this->visibleDisplayName($item, $display);
+        }
+
+        $submitted = $this->input($display);
+
+        if (is_string($submitted) && $submitted !== '') {
+            return $submitted;
+        }
+
+        $baseValue = $item->base?->getAttribute($display);
+
+        return is_string($baseValue) && $baseValue !== '' ? $baseValue : null;
+    }
+
+    /**
+     * The visible display value of an item: its override when present, else
+     * the live base column. Returns null when neither is a non-empty string.
+     */
+    protected function visibleDisplayName(UserCatalogItem $item, string $display): ?string
+    {
+        $override = ($item->overrides ?? [])[$display] ?? null;
+
+        if (is_string($override) && $override !== '') {
+            return $override;
+        }
+
+        $baseValue = $item->base?->getAttribute($display);
+
+        return is_string($baseValue) && $baseValue !== '' ? $baseValue : null;
     }
 
     /**

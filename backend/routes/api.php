@@ -6,6 +6,13 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\RubroController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\UserCatalog\DeleteController;
+use App\Http\Controllers\UserCatalog\ForkController;
+use App\Http\Controllers\UserCatalog\ShowController;
+use App\Http\Controllers\UserCatalog\StatusController;
+use App\Http\Controllers\UserCatalog\StoreController;
+use App\Http\Controllers\UserCatalog\TreeController;
+use App\Http\Controllers\UserCatalog\UpdateController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
@@ -27,7 +34,7 @@ Route::get('/health', function () {
     try {
         DB::connection()->getPdo();
         $checks['database'] = ['status' => 'ok'];
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         $checks['database'] = ['status' => 'error', 'message' => $e->getMessage()];
     }
 
@@ -35,7 +42,7 @@ Route::get('/health', function () {
     try {
         Redis::ping();
         $checks['redis'] = ['status' => 'ok'];
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         $checks['redis'] = ['status' => 'error', 'message' => $e->getMessage()];
     }
 
@@ -43,11 +50,11 @@ Route::get('/health', function () {
     try {
         Storage::disk('s3')->files();
         $checks['storage'] = ['status' => 'ok'];
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         $checks['storage'] = ['status' => 'error', 'message' => $e->getMessage()];
     }
 
-    $allHealthy = collect($checks)->every(fn($check) => $check['status'] === 'ok');
+    $allHealthy = collect($checks)->every(fn ($check) => $check['status'] === 'ok');
 
     return response()->json([
         'status' => $allHealthy ? 'healthy' : 'degraded',
@@ -63,7 +70,7 @@ Route::middleware([
     EnsureFrontendRequestsAreStateful::class,
 ])->group(function () {
     Route::post('/login', [LoginController::class, 'login']);
-    
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [LoginController::class, 'logout']);
         Route::get('/user', [UserController::class, 'me']);
@@ -74,7 +81,24 @@ Route::middleware([
 
         // Companies
         Route::apiResource('companies', CompanyController::class)->only(['index', 'store', 'update', 'show', 'destroy']);
-        
+
+        // User catalog (personal forks) — owner-scoped, admin denied by policy.
+        Route::prefix('user-catalog')->group(function () {
+            $types = 'rubros|categorias|services';
+
+            Route::get('tree', [TreeController::class, 'tree']);
+            // JD4-4: {baseId}/{fork} are uuid columns. Constraining them keeps
+            // malformed ids out of the database (PG 22P02 → 500) so a bad id
+            // 404s on both engines, honoring R7 (no scenario surfaces as 500).
+            Route::post('{type}', [StoreController::class, 'store'])->where('type', $types);
+            Route::post('{type}/{baseId}/fork', [ForkController::class, 'fork'])->where('type', $types)->whereUuid('baseId');
+            Route::get('{type}/{fork}', [ShowController::class, 'show'])->where('type', $types)->whereUuid('fork');
+            Route::put('{type}/{fork}', [UpdateController::class, 'update'])->where('type', $types)->whereUuid('fork');
+            Route::delete('{type}/{fork}', [DeleteController::class, 'destroy'])->where('type', $types)->whereUuid('fork');
+            Route::patch('{type}/{fork}/deactivate', [StatusController::class, 'deactivate'])->where('type', $types)->whereUuid('fork');
+            Route::patch('{type}/{fork}/reactivate', [StatusController::class, 'reactivate'])->where('type', $types)->whereUuid('fork');
+        });
+
         // Admin only routes
         Route::middleware('role:admin')->group(function () {
             Route::get('/users', [UserController::class, 'index']);
