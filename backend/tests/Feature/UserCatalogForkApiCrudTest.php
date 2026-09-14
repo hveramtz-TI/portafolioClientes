@@ -537,4 +537,43 @@ class UserCatalogForkApiCrudTest extends TestCase
 
         $this->assertSame(1, UserCatalogItem::count());
     }
+
+    /**
+     * JD4-3: the QueryException 409 branch is scoped to the user_catalog_items
+     * live-identity constraint (migration 2026_09_14_000000). Any OTHER unique
+     * violation must fall through to the default handler. Here `Rule::unique`
+     * passes and a competing insert (event hook, same trick as S7.5) makes the
+     * admin rubro store trip rubros' own name-unique index. On PostgreSQL an
+     * unscoped 23505 match currently renders the duplicate-fork message; after
+     * scoping both engines fall through to the default 500 with no fork text.
+     */
+    public function test_s7_7_foreign_unique_violation_does_not_render_the_fork_message(): void
+    {
+        Sanctum::actingAs(User::factory()->create(['role' => 'admin']));
+
+        $injected = false;
+        Rubro::creating(function () use (&$injected): void {
+            if ($injected) {
+                return;
+            }
+            $injected = true;
+
+            DB::table('rubros')->insert([
+                'id' => (string) Str::uuid(),
+                'name' => 'Race Rubro',
+                'status' => 'activo',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        });
+
+        try {
+            $response = $this->postJson('/api/rubros', ['name' => 'Race Rubro']);
+        } finally {
+            Rubro::flushEventListeners();
+        }
+
+        $response->assertStatus(500);
+        $this->assertStringNotContainsString('live fork', (string) $response->getContent());
+    }
 }
