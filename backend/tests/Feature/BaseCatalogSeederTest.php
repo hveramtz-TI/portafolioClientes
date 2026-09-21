@@ -218,6 +218,44 @@ class BaseCatalogSeederTest extends TestCase
         );
     }
 
+    public function test_canonical_renames_converge_on_fixed_ids_after_admin_edits(): void
+    {
+        $this->seedCatalog();
+
+        Rubro::query()->where('name', 'Informática')->firstOrFail()->update(['name' => 'Informática editada']);
+        Categoria::query()->where('name', 'Sitios web y presencia digital')->firstOrFail()->update(['name' => 'Sitios editados']);
+        Service::query()->where('title', 'Actualizar portafolio web')->firstOrFail()->update(['title' => 'Portafolio editado']);
+
+        $this->seedCatalog();
+
+        $this->assertDatabaseCount('rubros', 3);
+        $this->assertDatabaseCount('categorias', 7);
+        $this->assertDatabaseCount('services', 12);
+        $this->assertDatabaseHas('rubros', ['name' => 'Informática']);
+        $this->assertDatabaseHas('categorias', ['name' => 'Sitios web y presencia digital']);
+        $this->assertDatabaseHas('services', ['title' => 'Actualizar portafolio web']);
+    }
+
+    public function test_canonical_service_move_converges_on_fixed_id_after_admin_edit(): void
+    {
+        $this->seedCatalog();
+
+        $service = Service::query()->where('title', 'Actualizar portafolio web')->firstOrFail();
+        $targetCategory = Categoria::query()->where('name', 'Aplicaciones a medida')->firstOrFail();
+        $service->update(['categoria_id' => $targetCategory->id]);
+
+        $this->seedCatalog();
+
+        $this->assertDatabaseCount('rubros', 3);
+        $this->assertDatabaseCount('categorias', 7);
+        $this->assertDatabaseCount('services', 12);
+        $this->assertDatabaseHas('services', [
+            'id' => $service->id,
+            'categoria_id' => Categoria::query()->where('name', 'Sitios web y presencia digital')->firstOrFail()->id,
+            'title' => 'Actualizar portafolio web',
+        ]);
+    }
+
     public function test_standalone_commands_match_explicit_seed_path(): void
     {
         $this->seedCatalog();

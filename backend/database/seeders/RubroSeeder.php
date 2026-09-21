@@ -47,8 +47,8 @@ final class RubroSeeder extends Seeder
         DB::transaction(function () use ($rows) {
             DB::table('rubros')->upsert(
                 $rows,
-                ['name'],
-                ['description', 'status', 'updated_at', 'deleted_at']
+                ['id'],
+                ['name', 'description', 'status', 'updated_at', 'deleted_at']
             );
         });
     }

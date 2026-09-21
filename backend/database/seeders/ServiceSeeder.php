@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Categoria;
-use App\Models\Rubro;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -14,21 +13,22 @@ final class ServiceSeeder extends Seeder
 
     private const CANONICAL_TIMESTAMP = '2026-08-29 00:00:00';
 
+    private const CATEGORY_IDS = [
+        'Informática|Sitios web y presencia digital' => 'a2ccdb43-9f22-4400-adbc-ec65343b5723',
+        'Informática|Aplicaciones a medida' => 'a2ccdb43-9f23-4a32-9573-a7b656b4c02d',
+        'Informática|Mantenimiento y soporte' => 'a2ccdb43-9f25-4812-8bb7-46de38400c43',
+        'Diseño|Identidad visual' => 'a2ccdb43-9f27-4dc5-8bcc-cd461280e092',
+        'Diseño|UX/UI' => 'a2ccdb43-9f28-4d48-9582-c0a6c06a78b5',
+        'Consultoría|Arquitectura y estrategia' => 'a2ccdb43-9f2a-4a4f-962c-e05d9370e036',
+        'Consultoría|X' => 'a2ccdb43-9f2c-4b14-b1c0-b882e3c7723f',
+    ];
+
     public function run(): void
     {
-        $rubros = Rubro::query()->pluck('id', 'name');
-        $categorias = Categoria::query()
-            ->with('rubro')
-            ->get()
-            ->keyBy(fn (Categoria $categoria) => "{$categoria->rubro->name}|{$categoria->name}");
-
-        $resolve = function (string $rubroName, string $categoriaName) use ($rubros, $categorias): Categoria {
+        $resolve = function (string $rubroName, string $categoriaName): Categoria {
             $key = "{$rubroName}|{$categoriaName}";
 
-            return $categorias->get($key) ?? Categoria::query()
-                ->where('rubro_id', $rubros->get($rubroName))
-                ->where('name', $categoriaName)
-                ->firstOrFail();
+            return Categoria::query()->whereKey(self::CATEGORY_IDS[$key])->firstOrFail();
         };
 
         $rows = [
@@ -181,8 +181,8 @@ final class ServiceSeeder extends Seeder
         DB::transaction(function () use ($rows) {
             DB::table('services')->upsert(
                 $rows,
-                ['categoria_id', 'title'],
-                ['description', 'value', 'tags', 'status', 'updated_at', 'deleted_at']
+                ['id'],
+                ['categoria_id', 'title', 'description', 'value', 'tags', 'status', 'updated_at', 'deleted_at']
             );
         });
     }
