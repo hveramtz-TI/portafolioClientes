@@ -35,6 +35,11 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        // Catálogo base (orden crítico: rubros → categorías → servicios)
+        $this->call(RubroSeeder::class);
+        $this->call(CategoriaSeeder::class);
+        $this->call(ServiceSeeder::class);
+
         // Empresas de ejemplo
         $this->call(CompanySeeder::class);
 

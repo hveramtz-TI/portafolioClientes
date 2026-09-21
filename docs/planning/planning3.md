@@ -1,7 +1,7 @@
 # Planning — Rubros, Categorías y Servicios
 
 **Fecha:** 2026-08-28
-**Estado:** 🔵 **En progreso (actualizado 2026-09-14)** — Slices 1–4 (de 7) integrados, verificados y cerrados (cambios SDD archivados); el detalle en *Registro de progreso* al final. Pendientes: Slices 5–7 (seeders del catálogo base y frontend de catálogo).
+**Estado:** 🔵 **En progreso (actualizado 2026-09-21)** — Slices 1–4 (de 7) integrados en `main`, verificados y cerrados (cambios SDD archivados); Slice 5 (seeders del catálogo base) implementado, verificado y archivado en `feat/catalog-slice-5-base-seeders`, pendiente de integración. Pendientes: Slices 6–7 (frontend de catálogo) y transiciones end-to-end HU-013–HU-025. El detalle en *Registro de progreso* al final.
 **Objetivo:** Implementar el catálogo personalizable de rubros, categorías y servicios sobre el modelo híbrido (catálogo base global + fork personal por usuario), incluyendo CRUD, lifecycle (desactivar/eliminar/reactivar), seeders del catálogo base y personalización sin alterar la base ni afectar a otros usuarios.
 
 ## Contexto
@@ -9,7 +9,7 @@
 - Stack: Next.js 16 (App Router) · React 19 · Tailwind CSS 4 · TypeScript · Laravel 13 · PostgreSQL 16 · Redis 7 · MinIO. Componentes UI con **shadcn/ui**.
 - **planning1 (Auth + Roles):** implementado. Sanctum cookie-based (SPA), roles `admin`/`user`, UUIDv7 PK en `users`, middleware `EnsureRole`, login + seeder admin (sin registro público).
 - **planning2 (Clientes y empresas):** implementado. Modelos `Client` y `Company`, RUT único condicional, estados Activo/Desactivado, seeders ordenados (`CompanySeeder` antes de `ClientSeeder`), shadcn/ui en formularios.
-- **Estado actual del catálogo:** Slices 1–3 implementados y verificados: migraciones, modelos y API base administrativa de `Rubro`/`Categoria`/`Service` bajo `auth:sanctum` + `role:admin`, **más el motor de personalización (Slice 3)**: política de ownership, requests de validación de forks, `CatalogResolver` (herencia + estado efectivo recursivo) y `CascadeForkService` — todo dominio, sin endpoints aún (API de forks = Slice 4). Seeders y frontend pendientes en Slices 5–7; el perfil público y las órdenes de trabajo (que consumen este catálogo) son épicas posteriores.
+- **Estado actual del catálogo:** Slices 1–3 implementados y verificados: migraciones, modelos y API base administrativa de `Rubro`/`Categoria`/`Service` bajo `auth:sanctum` + `role:admin`, **más el motor de personalización (Slice 3)**: política de ownership, requests de validación de forks, `CatalogResolver` (herencia + estado efectivo recursivo) y `CascadeForkService` — todo dominio, sin endpoints aún (API de forks = Slice 4). Seeders del catálogo base implementados y verificados (Slice 5, pendiente de integración); frontend pendiente en Slices 6–7; el perfil público y las órdenes de trabajo (que consumen este catálogo) son épicas posteriores.
 - Jerarquía: `Rubro → Categoría → Servicio`. Categorías y servicios en **lenguaje natural** orientado al cliente; términos técnicos (`frontend`, `backend`, `fullstack`, etc.) solo como **etiquetas internas opcionales**.
 - Reglas de proyecto: KISS, YAGNI, feature-first, Clean Architecture, UUID como PK, Docker-first, migraciones como fuente de verdad del esquema.
 
@@ -193,3 +193,14 @@ Cambio SDD `catalog-slice-4-fork-api` (proposal/spec/design/tasks/apply-progress
 - **Verify:** **VERIFIED_WITH_WARNINGS** — 11/11 requisitos y **55/55 escenarios** trazables (40 fork-api + 15 delta), **219 tests / 795 aserciones** green en SQLite **y** PostgreSQL (reproducido independientemente), Pint PASS 24 archivos, cero CRITICAL. Warnings cerradas: texto D-5 del design reconciliado al as-built (carga plana con presupuesto constante medido 4/≤6) y migración aplicada en dev.
 - **Archive:** change archivado en `openspec/changes/archive/2026-09-14-catalog-slice-4-fork-api/` con specs sincronizadas: capability nueva `openspec/specs/user-catalog-fork-api/spec.md` + `user-catalog-personalization` actualizada (R3/R4/R5 modificados, **R8 añadido** — índice de identidad live).
 - **Deuda delegada a Slice 5+:** assert HTTP-level del 403 cross-owner en DELETE (hoy probado en capa policy), asimetría JD4-5 de nombres visibles, deuda Pint pre-existente de 11 archivos vírgenes del change.
+
+### 2026-09-21 — Slice 5 (Seeders del catálogo base)
+
+Cambio SDD `catalog-slice-5-base-seeders` (rama `feat/catalog-slice-5-base-seeders`):
+
+- **Entregado:** tres seeders idempotentes (`RubroSeeder`, `CategoriaSeeder`, `ServiceSeeder`) con el set aprobado HU-024 (3 rubros / 7 categorías / 12 servicios = 22 registros), UUIDv7 fijos, timestamps fijos, `upsert` transaccional por clave natural, `deleted_at => null` para revivir filas borradas, resolución de categorías por par `(rubro, categoría)` y wiring en `DatabaseSeeder` después de los usuarios inline y antes de `CompanySeeder`/`ClientSeeder`.
+- **Tests:** clase `BaseCatalogSeederTest` con 12 tests / 76 aserciones cubriendo conteos canónicos, parentesco, valores CLP/tags/descripciones, resolución por par, fallo de seeders dependientes, idempotencia byte-equal (n ≡ 1), revivir filas soft-deleted y convergencia de `status`, paridad standalone vs cadena, silencio de eventos de modelo, wiring de `DatabaseSeeder` y no-fuga entre tests.
+- **Verificación:** suite completa **231 tests / 871 aserciones** green en SQLite **y** PostgreSQL (baseline previa: 219 / 795); Pint PASS en los 5 archivos tocados; smoke test de revival verde en ambos motores, por lo que se probó el camino de `upsert` (sin activar el fallback `withTrashed`/`restore`/`updateOrCreate`).
+- **HUs afectadas:** **HU-024 pasa a En Revisión** — el backend de seeders del catálogo base está implementado y verificado, pero la HU describe la funcionalidad end-to-end del usuario (frontend de catálogo en Slices 6–7) para ser operable.
+- **Guardas de alcance respetadas:** sin cambios en `CompanySeeder`/`ClientSeeder`, migraciones, modelos, rutas, frontend ni dependencias de Composer; sin clase `UserSeeder`; sin uso de `#[Seed]`/`#[Seeder(...)]`.
+- **Nota de tamaño:** el diff real es de 743 adiciones en 5 archivos, por encima del presupuesto de 400 líneas del change; se reporta como `size:exception` porque la cobertura scenario-por-escenario es mandato del spec y el cambio es una unidad cohesiva (seeders + tests).
