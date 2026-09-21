@@ -1,7 +1,7 @@
 # Planning — Rubros, Categorías y Servicios
 
 **Fecha:** 2026-08-28
-**Estado:** 🔵 **En progreso (actualizado 2026-09-14)** — Slices 1–4 (de 7) integrados, verificados y cerrados (cambios SDD archivados); el detalle en *Registro de progreso* al final. Pendientes: Slices 5–7 (seeders del catálogo base y frontend de catálogo).
+**Estado:** 🔵 **En progreso (actualizado 2026-09-21)** — Slices 1–4 (de 7) integrados en `main`, verificados y cerrados (cambios SDD archivados); Slice 5 (seeders del catálogo base) implementado, verificado y archivado en `feat/catalog-slice-5-base-seeders`, pendiente de integración. Pendientes: Slices 6–7 (frontend de catálogo) y transiciones end-to-end HU-013–HU-025. El detalle en *Registro de progreso* al final.
 **Objetivo:** Implementar el catálogo personalizable de rubros, categorías y servicios sobre el modelo híbrido (catálogo base global + fork personal por usuario), incluyendo CRUD, lifecycle (desactivar/eliminar/reactivar), seeders del catálogo base y personalización sin alterar la base ni afectar a otros usuarios.
 
 ## Contexto
@@ -9,7 +9,7 @@
 - Stack: Next.js 16 (App Router) · React 19 · Tailwind CSS 4 · TypeScript · Laravel 13 · PostgreSQL 16 · Redis 7 · MinIO. Componentes UI con **shadcn/ui**.
 - **planning1 (Auth + Roles):** implementado. Sanctum cookie-based (SPA), roles `admin`/`user`, UUIDv7 PK en `users`, middleware `EnsureRole`, login + seeder admin (sin registro público).
 - **planning2 (Clientes y empresas):** implementado. Modelos `Client` y `Company`, RUT único condicional, estados Activo/Desactivado, seeders ordenados (`CompanySeeder` antes de `ClientSeeder`), shadcn/ui en formularios.
-- **Estado actual del catálogo:** Slices 1–3 implementados y verificados: migraciones, modelos y API base administrativa de `Rubro`/`Categoria`/`Service` bajo `auth:sanctum` + `role:admin`, **más el motor de personalización (Slice 3)**: política de ownership, requests de validación de forks, `CatalogResolver` (herencia + estado efectivo recursivo) y `CascadeForkService` — todo dominio, sin endpoints aún (API de forks = Slice 4). Seeders y frontend pendientes en Slices 5–7; el perfil público y las órdenes de trabajo (que consumen este catálogo) son épicas posteriores.
+- **Estado actual del catálogo:** Slices 1–3 implementados y verificados: migraciones, modelos y API base administrativa de `Rubro`/`Categoria`/`Service` bajo `auth:sanctum` + `role:admin`, **más el motor de personalización (Slice 3)**: política de ownership, requests de validación de forks, `CatalogResolver` (herencia + estado efectivo recursivo) y `CascadeForkService` — todo dominio, sin endpoints aún (API de forks = Slice 4). Seeders del catálogo base implementados y verificados (Slice 5, pendiente de integración); frontend pendiente en Slices 6–7; el perfil público y las órdenes de trabajo (que consumen este catálogo) son épicas posteriores.
 - Jerarquía: `Rubro → Categoría → Servicio`. Categorías y servicios en **lenguaje natural** orientado al cliente; términos técnicos (`frontend`, `backend`, `fullstack`, etc.) solo como **etiquetas internas opcionales**.
 - Reglas de proyecto: KISS, YAGNI, feature-first, Clean Architecture, UUID como PK, Docker-first, migraciones como fuente de verdad del esquema.
 
