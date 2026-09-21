@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   Building2,
   ClipboardList,
+  FolderTree,
   Inbox,
   LayoutDashboard,
   Users,
@@ -27,6 +28,7 @@ const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Clientes', href: '/clientes', icon: Users },
   { label: 'Empresas', href: '/empresas', icon: Building2 },
+  { label: 'Catalog', href: '/catalogo', icon: FolderTree },
   { label: 'Solicitudes', href: '/solicitudes', icon: Inbox },
   { label: 'Órdenes de Trabajo', href: '/ordenes', icon: ClipboardList },
 ];

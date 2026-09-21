@@ -99,6 +99,10 @@ Route::middleware([
             Route::patch('{type}/{fork}/reactivate', [StatusController::class, 'reactivate'])->where('type', $types)->whereUuid('fork');
         });
 
+        // Base catalog is readable by every authenticated user. Mutations stay
+        // inside the admin-only group below.
+        Route::get('/rubros', [RubroController::class, 'index']);
+
         // Admin only routes
         Route::middleware('role:admin')->group(function () {
             Route::get('/users', [UserController::class, 'index']);
@@ -107,7 +111,7 @@ Route::middleware([
             Route::get('/rubros/{rubro}/categorias', [RubroController::class, 'categorias']);
             Route::patch('/rubros/{rubro}/deactivate', [RubroController::class, 'deactivate']);
             Route::patch('/rubros/{rubro}/reactivate', [RubroController::class, 'reactivate']);
-            Route::apiResource('rubros', RubroController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::apiResource('rubros', RubroController::class)->only(['store', 'update', 'destroy']);
 
             // Base catalog (categorias)
             Route::get('/categorias/{categoria}/services', [CategoriaController::class, 'services']);
