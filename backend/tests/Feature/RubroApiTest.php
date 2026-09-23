@@ -33,13 +33,13 @@ class RubroApiTest extends TestCase
         $response->assertStatus(401);
     }
 
-    public function test_regular_user_is_forbidden(): void
+    public function test_regular_user_can_read_base_rubros(): void
     {
         Sanctum::actingAs(User::factory()->create(['role' => 'user']));
 
         $response = $this->getJson('/api/rubros');
 
-        $response->assertStatus(403);
+        $response->assertOk();
     }
 
     public function test_admin_can_list_active_rubros_by_default(): void

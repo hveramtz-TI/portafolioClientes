@@ -1,6 +1,23 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8010';
 
 /**
+ * Error thrown by apiFetch for non-2xx responses.
+ * Preserves the HTTP status and, for Laravel validation failures (422),
+ * the field-level `errors` map so callers can render per-field messages.
+ */
+export class ApiError extends Error {
+  readonly status: number;
+  readonly errors?: Record<string, string[]>;
+
+  constructor(message: string, status: number, errors?: Record<string, string[]>) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.errors = errors;
+  }
+}
+
+/**
  * Obtiene el token CSRF de la cookie XSRF-TOKEN
  */
 function getCsrfToken(): string | null {
@@ -41,7 +58,11 @@ export async function apiFetch<T = unknown>(
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'Error en la petición' }));
-    throw new Error(error.message || `HTTP ${response.status}`);
+    throw new ApiError(
+      error.message || `HTTP ${response.status}`,
+      response.status,
+      error.errors
+    );
   }
 
   // Manejar respuestas vacías (204 No Content)
