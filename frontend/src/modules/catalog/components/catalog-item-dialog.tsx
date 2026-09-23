@@ -5,8 +5,11 @@ import { Undo2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { CatalogItemType, CatalogNode, CreatePersonalItemInput } from '../api';
 import { buildCatalogInput, toFormErrors, toInputValue, type FormErrors } from './catalog-item-dialog.helpers';
+import { catalogNodeLabel } from './catalog-node-label';
+import { parentCandidatesFor } from './catalog-node-candidates';
 
 export interface CatalogCreateIntent {
   type: CatalogItemType;
@@ -18,6 +21,8 @@ export interface CatalogItemDialogProps {
   open: boolean;
   item?: CatalogNode | null;
   createIntent?: CatalogCreateIntent | null;
+  /** The user's catalog tree, used to offer type-coherent move destinations. */
+  tree?: CatalogNode[];
   onOpenChange: (open: boolean) => void;
   onSave: (input: CreatePersonalItemInput) => Promise<void>;
   validationErrors?: Record<string, string[]>;
@@ -37,7 +42,7 @@ function dialogTitle(type: CatalogItemType, isEdit: boolean): string {
   return `${isEdit ? 'Edit' : 'New'} ${TYPE_NOUN[type]}`;
 }
 
-export function CatalogItemDialog({ open, item, createIntent, onOpenChange, onSave, validationErrors, formError }: CatalogItemDialogProps) {
+export function CatalogItemDialog({ open, item, createIntent, tree, onOpenChange, onSave, validationErrors, formError }: CatalogItemDialogProps) {
   const isEdit = Boolean(item);
   const type: CatalogItemType = item?.item_type ?? createIntent?.type ?? 'rubro';
   const isService = type === 'service';
@@ -47,12 +52,18 @@ export function CatalogItemDialog({ open, item, createIntent, onOpenChange, onSa
   const [description, setDescription] = useState(item?.description ?? '');
   const [value, setValue] = useState(toInputValue(item?.value));
   const [tags, setTags] = useState<string[]>(item?.tags ?? []);
+  const [destination, setDestination] = useState<string | null>(null);
   const [reverted, setReverted] = useState<string[]>([]);
   const [localErrors, setLocalErrors] = useState<FormErrors>({});
   const [saving, setSaving] = useState(false);
 
   const fieldErrors = validationErrors ?? localErrors.validationErrors;
   const topLevelError = formError ?? localErrors.formError;
+
+  // Only a service can move, and only to a categoria other than its current parent.
+  const destinations = isEdit && isService
+    ? parentCandidatesFor(tree ?? [], 'service', item?.parent_fork_id)
+    : [];
 
   // Reset the form when the dialog opens or targets another item, without an effect.
   const resetKey = `${open ? 'open' : 'closed'}|${item?.id ?? 'new'}|${createIntent?.type ?? ''}|${createIntent?.parentForkId ?? ''}`;
@@ -64,6 +75,7 @@ export function CatalogItemDialog({ open, item, createIntent, onOpenChange, onSa
     setDescription(item?.description ?? '');
     setValue(toInputValue(item?.value));
     setTags(item?.tags ?? []);
+    setDestination(null);
     setReverted([]);
     setLocalErrors({});
   }
@@ -115,7 +127,8 @@ export function CatalogItemDialog({ open, item, createIntent, onOpenChange, onSa
     setSaving(true);
     setLocalErrors({});
     try {
-      const input = buildCatalogInput(type, item, { name, title, description, value, tags, reverted }, createIntent?.parentForkId);
+      const parentForkId = isEdit ? destination : createIntent?.parentForkId;
+      const input = buildCatalogInput(type, item, { name, title, description, value, tags, reverted }, parentForkId);
       await onSave(input);
       onOpenChange(false);
     } catch (error) {
@@ -199,6 +212,24 @@ export function CatalogItemDialog({ open, item, createIntent, onOpenChange, onSa
                 {revertControl('value')}
               </div>
               {fieldError('value')}
+            </div>
+          ) : null}
+          {destinations.length > 0 ? (
+            <div className="space-y-1">
+              <span className="text-sm font-medium">Destination category</span>
+              <Select value={destination ?? ''} onValueChange={setDestination}>
+                <SelectTrigger aria-label="Destination category">
+                  <SelectValue placeholder="Keep current category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {destinations.map((candidate) => (
+                    <SelectItem key={candidate.id} value={candidate.id}>
+                      {catalogNodeLabel(candidate)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {fieldError('parent_fork_id')}
             </div>
           ) : null}
           {isService ? (

@@ -333,3 +333,72 @@ describe('CatalogItemDialog — server error surfacing', () => {
     expect(onOpenChange).not.toHaveBeenCalledWith(false);
   });
 });
+
+function categoriaNode(id: string, name: string): CatalogNode {
+  return {
+    id,
+    base_id: `base-${id}`,
+    item_type: 'categoria',
+    parent_fork_id: 'rubro-1',
+    sort_order: 0,
+    name,
+    description: null,
+    status: 'activo',
+    origin: 'personal',
+    overridden_fields: [],
+  };
+}
+
+const moveTree: CatalogNode[] = [
+  {
+    id: 'rubro-1', base_id: 'base-rubro', item_type: 'rubro', parent_fork_id: null, sort_order: 0,
+    name: 'Design', description: null, status: 'activo', origin: 'personal', overridden_fields: [],
+    children: [categoriaNode('cat-web', 'Web'), categoriaNode('cat-branding', 'Branding')],
+  },
+];
+
+const moveService = catalogNode({ item_type: 'service', title: 'Logo', parent_fork_id: 'cat-web' });
+
+describe('CatalogItemDialog — move-service destination selector', () => {
+  it('lists other categoria forks and excludes the current parent', async () => {
+    const user = userEvent.setup();
+    setup({ item: moveService, tree: moveTree });
+
+    await user.click(screen.getByLabelText('Destination category'));
+
+    expect(await screen.findByRole('option', { name: 'Branding' })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: 'Web' })).not.toBeInTheDocument();
+  });
+
+  it('sends parent_fork_id when the destination categoria changes', async () => {
+    const user = userEvent.setup();
+    const { onSave } = setup({ item: moveService, tree: moveTree });
+
+    await user.click(screen.getByLabelText('Destination category'));
+    await user.click(await screen.findByRole('option', { name: 'Branding' }));
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+    expect(onSave).toHaveBeenCalledWith({ parent_fork_id: 'cat-branding' });
+  });
+
+  it('omits parent_fork_id when the destination is left unchanged', async () => {
+    const user = userEvent.setup();
+    const { onSave } = setup({ item: moveService, tree: moveTree });
+
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+    expect(onSave).toHaveBeenCalledWith({});
+  });
+
+  it('surfaces a 422 move error on the destination selector', () => {
+    setup({
+      item: moveService,
+      tree: moveTree,
+      validationErrors: { parent_fork_id: ['Destination title clash.'] },
+    });
+
+    expect(screen.getByText('Destination title clash.')).toBeInTheDocument();
+  });
+});

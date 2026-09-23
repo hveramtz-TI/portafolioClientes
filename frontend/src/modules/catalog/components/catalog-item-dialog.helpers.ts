@@ -75,6 +75,11 @@ export function buildCatalogInput(
     if (reverted.includes('description')) input.description = null;
     else if (values.description !== (item.description ?? '')) input.description = values.description;
   }
+
+  // A destination parent is only present when the user picked a new one, so an
+  // unchanged selector leaves the parent untouched (omitted).
+  if (parentForkId) input.parent_fork_id = parentForkId;
+
   return input;
 }
 
