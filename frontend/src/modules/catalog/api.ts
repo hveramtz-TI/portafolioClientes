@@ -50,12 +50,23 @@ export function getUserCatalogTree(filters: CatalogFilters = {}): Promise<Catalo
 }
 
 export interface CreatePersonalItemInput {
-  name?: string;
-  title?: string;
-  description?: string;
-  value?: number;
-  tags?: string[];
+  name?: string | null;
+  title?: string | null;
+  description?: string | null;
+  value?: number | null;
+  tags?: string[] | null;
   parent_fork_id?: string | null;
+}
+
+/** Laravel 422 validation failure shape (field-level messages). */
+export interface LaravelValidationError {
+  message: string;
+  errors: Record<string, string[]>;
+}
+
+/** Laravel 409 conflict shape (form-level message). */
+export interface LaravelConflictError {
+  message: string;
 }
 
 export function forkBaseItem(type: CatalogItemType, baseId: string): Promise<unknown> {

@@ -1,4 +1,4 @@
-import { api, apiFetch, ensureCsrfCookie } from '../api';
+import { api, apiFetch, ensureCsrfCookie, ApiError } from '../api';
 
 // Mock de fetch global
 global.fetch = jest.fn();
@@ -81,6 +81,85 @@ describe('api client', () => {
 
       const result = await apiFetch('/api/test');
       expect(result).toEqual({});
+    });
+  });
+
+  describe('apiFetch error contract', () => {
+    it('exposes status 422 and the Laravel errors map', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 422,
+        json: () =>
+          Promise.resolve({
+            message: 'The given data was invalid.',
+            errors: { name: ['The name has already been taken.'] },
+          }),
+      });
+
+      const error: unknown = await apiFetch('/api/test').catch((err) => err);
+
+      expect(error).toBeInstanceOf(ApiError);
+      expect((error as ApiError).status).toBe(422);
+      expect((error as ApiError).errors).toEqual({
+        name: ['The name has already been taken.'],
+      });
+      expect((error as ApiError).message).toBe('The given data was invalid.');
+    });
+
+    it('exposes status 409 and the server message', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 409,
+        json: () => Promise.resolve({ message: 'Duplicate fork identity.' }),
+      });
+
+      const error: unknown = await apiFetch('/api/test').catch((err) => err);
+
+      expect(error).toBeInstanceOf(ApiError);
+      expect((error as ApiError).status).toBe(409);
+      expect((error as ApiError).message).toBe('Duplicate fork identity.');
+    });
+
+    it('exposes status 500 and the server message for non-validation errors', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        json: () => Promise.resolve({ message: 'Server exploded' }),
+      });
+
+      const error: unknown = await apiFetch('/api/test').catch((err) => err);
+
+      expect(error).toBeInstanceOf(ApiError);
+      expect((error as ApiError).status).toBe(500);
+      expect((error as ApiError).message).toBe('Server exploded');
+    });
+
+    it('keeps the existing generic message when the error body is not JSON', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 502,
+        json: () => Promise.reject(new Error('invalid json')),
+      });
+
+      const error: unknown = await apiFetch('/api/test').catch((err) => err);
+
+      expect(error).toBeInstanceOf(ApiError);
+      expect((error as ApiError).status).toBe(502);
+      expect((error as ApiError).message).toBe('Error en la petición');
+    });
+
+    it('falls back to the HTTP status when the JSON body has no message', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        json: () => Promise.resolve({}),
+      });
+
+      const error: unknown = await apiFetch('/api/test').catch((err) => err);
+
+      expect(error).toBeInstanceOf(ApiError);
+      expect((error as ApiError).status).toBe(404);
+      expect((error as ApiError).message).toBe('HTTP 404');
     });
   });
 
